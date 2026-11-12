@@ -146,6 +146,10 @@ Any static server works. Opening `index.html` directly also works; only the serv
 └── LICENSE                 # MIT
 ```
 
+## Deploying a change
+
+Bump `ASSET_VERSION` in `service-worker.js` and the `?v=` query on the CSS/JS links in both HTML files. The service worker is network-first, so a new version reaches an open tab on the next load; the version bump stops the HTTP cache from answering with the previous file.
+
 ## Checks
 
 ```bash
