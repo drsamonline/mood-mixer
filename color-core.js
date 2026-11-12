@@ -267,6 +267,47 @@
     return out;
   }
 
+  /* Colour-vision simulation: the usual Viénot/Brettel sRGB matrices. */
+  const CVD_MATRICES = {
+    deuteranopia: [[0.625, 0.375, 0], [0.7, 0.3, 0], [0, 0.3, 0.7]],
+    protanopia: [[0.567, 0.433, 0], [0.558, 0.442, 0], [0, 0.242, 0.758]],
+    tritanopia: [[0.95, 0.05, 0], [0, 0.433, 0.567], [0, 0.475, 0.525]]
+  };
+
+  function simulate(color, type) {
+    const m = CVD_MATRICES[type];
+    if (!m) return toHex(color);
+    const channel = (row) => clamp(Math.round(row[0] * color.r + row[1] * color.g + row[2] * color.b), 0, 255);
+    return toHex({ r: channel(m[0]), g: channel(m[1]), b: channel(m[2]) });
+  }
+
+  /* Dominant colours from a pixel sample, quantised to a 4-bit grid. */
+  function dominant(pixels, count) {
+    const buckets = new Map();
+    pixels.forEach((pixel) => {
+      if (pixel.a !== undefined && pixel.a < 128) return;
+      const key = `${pixel.r >> 4}-${pixel.g >> 4}-${pixel.b >> 4}`;
+      const entry = buckets.get(key) || { r: 0, g: 0, b: 0, n: 0 };
+      entry.r += pixel.r;
+      entry.g += pixel.g;
+      entry.b += pixel.b;
+      entry.n += 1;
+      buckets.set(key, entry);
+    });
+    const sorted = Array.from(buckets.values()).sort((a, b) => b.n - a.n);
+    const picked = [];
+    sorted.forEach((entry) => {
+      if (picked.length >= (count || 5)) return;
+      const color = { r: Math.round(entry.r / entry.n), g: Math.round(entry.g / entry.n), b: Math.round(entry.b / entry.n) };
+      const tooClose = picked.some((other) => {
+        const d = Math.abs(other.r - color.r) + Math.abs(other.g - color.g) + Math.abs(other.b - color.b);
+        return d < 60;
+      });
+      if (!tooClose) picked.push(color);
+    });
+    return picked.map((color) => toHex(color));
+  }
+
   /* Compact state token: #p=xxxxxx carries the whole palette in six characters. */
   const MODEL_KEYS = ['hsl', 'rgb', 'hsv'];
   const BLEND_KEYS = ['normal', 'vibrant', 'pastel', 'mono'];
@@ -344,6 +385,8 @@
     vibeForHue,
     encodeToken,
     decodeToken,
+    simulate,
+    dominant,
     describe,
     HARMONIES
   };

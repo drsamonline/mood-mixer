@@ -82,8 +82,11 @@ All captures are real renders of this repository, taken at 1440×900, 1440×1000
 - **Locks.** Freeze hue, saturation or lightness and move everything else.
 - **Exports.** Copy hex, copy the palette, copy it as a text list, or download CSS variables, JSON, a Tailwind config or a 1200×630 PNG card.
 - **Shareable links.** The whole state packs into a six-character code — `#p=1in8hx` — carried in the URL hash; a Copy link button puts the full link on the clipboard. Longer query-style links from earlier versions still open.
+- **Vision check.** The current palette shown as deuteranopia, protanopia and tritanopia see it, beside normal vision.
+- **From an image.** Drop a photo or pick a file: five dominant colours are read in the browser, copyable one by one, or matched back to the sliders. Nothing is uploaded.
+- **Collections.** Save the four colours as a named palette, restore it with every setting, copy it, delete it. Collections travel in the JSON backup.
 - **Readable pairs.** Three text-on-background suggestions from the current palette, each graded, each copying its CSS on click.
-- **Saved moods and history.** Save, rename, move between folders, load and delete moods; each mood shows its four colours as a thumbnail; filter by folder; a 12-entry palette history you can drag to reorder, with restore. Import and export a JSON backup.
+- **Saved moods and history.** Save, rename, move between folders, load and delete moods; each mood shows its four colours as a thumbnail; filter by folder; a 12-entry palette history you can drag to reorder — with an Undo reorder button — and restore. Import and export a JSON backup.
 - **Print card.** One click prints the palette as a clean card — vibe, hex, RGB, HSL and the four colours in a 2×2 grid, nothing else.
 - **Undo and redo.** Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, or the buttons.
 - **Focus mode.** One tap on the screen and the whole display becomes the colour — header, card, swatches, controls, support bar and footer all go. Tap anywhere to bring the interface back for a few seconds, or press Escape to leave.

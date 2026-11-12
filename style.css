@@ -1294,3 +1294,134 @@ body.focus-locked {
   flex: 1;
   height: 100%;
 }
+
+/* ---------- vision check ---------- */
+.vision-list {
+  display: grid;
+  gap: 7px;
+}
+
+.vision-row {
+  display: grid;
+  align-items: center;
+  gap: 8px;
+  grid-template-columns: 92px 1fr;
+}
+
+.vision-label {
+  color: var(--color-muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.vision-strip {
+  display: flex;
+  height: 26px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+  border-radius: 6px;
+}
+
+.vision-strip span {
+  flex: 1;
+}
+
+/* ---------- image palette ---------- */
+.drop-zone {
+  display: grid;
+  gap: 3px;
+  padding: 16px;
+  border: 1px dashed color-mix(in srgb, var(--color-text) 26%, transparent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-surface-solid) 70%, transparent);
+  cursor: pointer;
+  text-align: center;
+}
+
+.drop-zone:hover,
+.drop-zone.is-over {
+  border-color: var(--color-primary);
+}
+
+.drop-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.drop-sub {
+  color: var(--color-muted);
+  font-size: 0.68rem;
+}
+
+.image-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.image-chip {
+  display: grid;
+  gap: 3px;
+  min-width: 74px;
+  padding: 7px 8px;
+  border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-align: left;
+}
+
+.image-chip:hover {
+  border-color: var(--color-primary);
+}
+
+/* ---------- collections ---------- */
+.collections {
+  display: grid;
+  gap: 8px;
+}
+
+.collection-row {
+  display: grid;
+  align-items: center;
+  gap: 8px;
+  grid-template-columns: 1fr auto;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-solid);
+}
+
+.collection-main {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.collection-name {
+  font-size: 0.76rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.collection-strip {
+  display: flex;
+  height: 20px;
+  overflow: hidden;
+  border-radius: 5px;
+}
+
+.collection-strip span {
+  flex: 1;
+}
+
+.collection-actions {
+  display: flex;
+  gap: 5px;
+}

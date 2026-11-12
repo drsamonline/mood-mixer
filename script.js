@@ -74,6 +74,7 @@
     audio: Boolean(stored.audio),
     controlsOpen: Boolean(stored.controlsOpen),
     folderFilter: typeof stored.folderFilter === 'string' ? stored.folderFilter : 'All',
+    collections: Array.isArray(stored.collections) ? stored.collections.slice(0, 40) : [],
     locks: Object.assign({ hue: false, sat: false, lit: false }, stored.locks || {}),
     lockedValues: Object.assign({ hue: null, sat: null, lit: null }, stored.lockedValues || {})
   };
@@ -88,6 +89,7 @@
   let persistTimer = 0;
   let hashTimer = 0;
   let hudHideTimer = 0;
+  let historyOrderBackup = null;
 
   /* ---------- persistence ---------- */
 
@@ -372,6 +374,8 @@
   function renderHistory() {
     const container = byId('colorHistoryContainer');
     if (!container) return;
+    const undoReorder = byId('undoReorderBtn');
+    if (undoReorder) undoReorder.hidden = !historyOrderBackup;
     container.replaceChildren();
     if (!state.history.length) {
       const empty = document.createElement('p');
@@ -403,10 +407,13 @@
         const from = Number(event.dataTransfer.getData('text/plain'));
         const to = Number(row.dataset.index);
         if (!Number.isFinite(from) || !Number.isFinite(to) || from === to) return;
+        historyOrderBackup = state.history.slice();
         const moved = state.history.splice(from, 1)[0];
         state.history.splice(to, 0, moved);
         renderHistory();
         persistNow();
+        const undoReorder = byId('undoReorderBtn');
+        if (undoReorder) undoReorder.hidden = false;
       });
       const swatches = document.createElement('div');
       swatches.className = 'history-swatches';
@@ -653,6 +660,195 @@
     }));
   }
 
+  const VISION_TYPES = [
+    ['normal', 'Normal'],
+    ['deuteranopia', 'Deuteranopia'],
+    ['protanopia', 'Protanopia'],
+    ['tritanopia', 'Tritanopia']
+  ];
+
+  function renderVision(palette) {
+    const container = byId('visionContainer');
+    if (!container) return;
+    container.replaceChildren(...VISION_TYPES.map(([type, label]) => {
+      const row = document.createElement('div');
+      row.className = 'vision-row';
+
+      const name = document.createElement('span');
+      name.className = 'vision-label';
+      name.textContent = label;
+
+      const strip = document.createElement('span');
+      strip.className = 'vision-strip';
+      strip.setAttribute('role', 'img');
+      palette.forEach((hex) => {
+        const rgb = C.hexToRgb(hex);
+        const chip = document.createElement('span');
+        chip.style.backgroundColor = type === 'normal' || !rgb ? hex : C.simulate(rgb, type);
+        strip.appendChild(chip);
+      });
+      strip.setAttribute('aria-label', `${label}: ${palette.map((hex) => {
+        const rgb = C.hexToRgb(hex);
+        return type === 'normal' || !rgb ? hex : C.simulate(rgb, type);
+      }).join(', ')}`);
+
+      row.append(name, strip);
+      return row;
+    }));
+  }
+
+  /* ---------- collections ---------- */
+
+  function renderCollections() {
+    const container = byId('collectionsContainer');
+    if (!container) return;
+    container.replaceChildren();
+    if (!state.collections.length) {
+      const empty = document.createElement('p');
+      empty.className = 'section-hint';
+      empty.textContent = 'No saved palettes yet. Save the current four colours to keep them together.';
+      container.appendChild(empty);
+      return;
+    }
+    state.collections.forEach((collection) => {
+      const row = document.createElement('div');
+      row.className = 'collection-row';
+
+      const main = document.createElement('div');
+      main.className = 'collection-main';
+
+      const name = document.createElement('span');
+      name.className = 'collection-name';
+      name.textContent = collection.name || 'Palette';
+
+      const strip = document.createElement('span');
+      strip.className = 'collection-strip';
+      (collection.palette || []).forEach((hex) => {
+        const chip = document.createElement('span');
+        chip.style.backgroundColor = hex;
+        strip.appendChild(chip);
+      });
+
+      main.append(name, strip);
+
+      const actions = document.createElement('div');
+      actions.className = 'collection-actions';
+
+      const use = document.createElement('button');
+      use.type = 'button';
+      use.className = 'btn btn-sm';
+      use.textContent = 'Use';
+      use.addEventListener('click', () => {
+        commitUndo();
+        Object.assign(state.values, collection.values || {});
+        if (collection.settings) {
+          if (collection.settings.model) state.model = collection.settings.model;
+          if (collection.settings.blend) state.blend = collection.settings.blend;
+          if (collection.settings.harmony) state.harmony = collection.settings.harmony;
+          if (collection.settings.background) state.background = collection.settings.background;
+        }
+        vibePinned = false;
+        syncSettings();
+        buildSliders();
+        updateMood();
+        announce(`${collection.name || 'Palette'} loaded`);
+      });
+
+      const copy = document.createElement('button');
+      copy.type = 'button';
+      copy.className = 'btn btn-sm';
+      copy.textContent = 'Copy';
+      copy.addEventListener('click', () => copyText((collection.palette || []).join(', '), 'Palette copied'));
+
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'btn btn-sm';
+      remove.textContent = 'Delete';
+      remove.addEventListener('click', () => {
+        state.collections = state.collections.filter((item) => item.id !== collection.id);
+        renderCollections();
+        persistNow();
+      });
+
+      actions.append(use, copy, remove);
+      row.append(main, actions);
+      container.appendChild(row);
+    });
+  }
+
+  /* ---------- image palette ---------- */
+
+  function imageToPalette(file) {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      const size = 64;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(image, 0, 0, size, size);
+      let data = null;
+      try {
+        data = ctx.getImageData(0, 0, size, size).data;
+      } catch (error) {
+        data = null;
+      }
+      URL.revokeObjectURL(url);
+      if (!data) {
+        announce('That image could not be read');
+        return;
+      }
+      const pixels = [];
+      for (let i = 0; i < data.length; i += 4) {
+        pixels.push({ r: data[i], g: data[i + 1], b: data[i + 2], a: data[i + 3] });
+      }
+      const colors = C.dominant(pixels, 5);
+      renderImagePalette(colors, file.name);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      announce('That file is not an image the browser can read');
+    };
+    image.src = url;
+  }
+
+  function renderImagePalette(colors, label) {
+    const container = byId('imagePalette');
+    if (!container) return;
+    container.replaceChildren(...colors.map((hex) => {
+      const rgb = C.hexToRgb(hex);
+      const ink = rgb ? C.bestInk(rgb) : { ink: '#111111' };
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'image-chip';
+      chip.style.backgroundColor = hex;
+      chip.style.color = ink.ink;
+      chip.textContent = hex;
+      chip.setAttribute('aria-label', `${hex} from ${label}. Copy hex`);
+      chip.addEventListener('click', () => copyText(hex, `${hex} copied`));
+      return chip;
+    }));
+
+    const use = document.createElement('button');
+    use.type = 'button';
+    use.className = 'btn btn-sm';
+    use.textContent = 'Match sliders to the first colour';
+    use.addEventListener('click', () => {
+      const rgb = C.hexToRgb(colors[0]);
+      if (!rgb) return;
+      const hsl = C.rgbToHsl(rgb.r, rgb.g, rgb.b);
+      commitUndo();
+      state.values.energy = Math.round(C.clamp((hsl.h - hsl.s * 0.5 / 3.6) / 3.6, 0, 100));
+      state.values.sparkle = Math.round(C.clamp((hsl.s - 40) / 0.6, 0, 100));
+      state.values.calmness = Math.round(C.clamp((hsl.l - 20) / 0.7, 0, 100));
+      vibePinned = false;
+      buildSliders();
+      updateMood();
+    });
+    container.appendChild(use);
+  }
+
   function renderVibes() {
     const container = byId('vibeDictionary');
     if (!container) return;
@@ -879,6 +1075,7 @@
 
     paintSwatches(palette);
     renderPairs(palette);
+    renderVision(palette);
 
     const backdropInk = C.bestInk(C.hexToRgb(palette[0]) || current);
     document.documentElement.style.setProperty('--on-backdrop', backdropInk.ink);
@@ -1166,6 +1363,17 @@
       });
     });
 
+    on('undoReorderBtn', 'click', () => {
+      if (!historyOrderBackup) return;
+      state.history = historyOrderBackup.slice();
+      historyOrderBackup = null;
+      renderHistory();
+      persistNow();
+      const undoReorder = byId('undoReorderBtn');
+      if (undoReorder) undoReorder.hidden = true;
+      announce('Order restored');
+    });
+
     on('undoBtn', 'click', undo);
     on('redoBtn', 'click', redo);
 
@@ -1184,6 +1392,51 @@
 
     on('randomizeBtn', 'click', randomize);
     on('randomizeHeader', 'click', randomize);
+
+    on('saveCollectionBtn', 'click', () => {
+      const name = window.prompt('Name this palette:', `${currentVibe} palette`);
+      if (!name || !name.trim()) return;
+      state.collections.unshift({
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        name: name.trim(),
+        palette: C.palette(current, state.harmony),
+        values: snapshotValues(),
+        settings: {
+          model: state.model,
+          blend: state.blend,
+          harmony: state.harmony,
+          background: state.background
+        }
+      });
+      state.collections = state.collections.slice(0, 40);
+      renderCollections();
+      persistNow();
+      announce('Palette saved to collections');
+    });
+
+    const imageInput = byId('imageInput');
+    const dropZone = byId('imageDrop');
+    if (dropZone) {
+      ['dragenter', 'dragover'].forEach((type) => {
+        dropZone.addEventListener(type, (event) => {
+          event.preventDefault();
+          dropZone.classList.add('is-over');
+        });
+      });
+      ['dragleave', 'drop'].forEach((type) => {
+        dropZone.addEventListener(type, () => dropZone.classList.remove('is-over'));
+      });
+      dropZone.addEventListener('drop', (event) => {
+        event.preventDefault();
+        const file = event.dataTransfer?.files?.[0];
+        if (file && file.type.startsWith('image/')) imageToPalette(file);
+      });
+    }
+    on('imageInput', 'change', (event) => {
+      const file = event.target.files?.[0];
+      if (file) imageToPalette(file);
+      event.target.value = '';
+    });
 
     on('addSliderBtn', 'click', () => {
       commitUndo();
@@ -1257,7 +1510,8 @@
       app: 'Mood Mixer',
       version: 2,
       exported: new Date().toISOString(),
-      moods: state.saved
+      moods: state.saved,
+      collections: state.collections
     }, null, 2), 'application/json'));
 
     on('importBtn', 'click', () => byId('importFileInput')?.click());
@@ -1297,9 +1551,23 @@
           }))
           .filter((item) => !known.has(item.id));
         state.saved = clean.concat(state.saved).slice(0, MAX_SAVED);
+
+        const collections = Array.isArray(data.collections) ? data.collections : [];
+        const cleanCollections = collections
+          .filter((item) => item && typeof item === 'object' && Array.isArray(item.palette))
+          .map((item) => ({
+            id: typeof item.id === 'string' ? item.id : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+            name: String(item.name || 'Palette').slice(0, 80),
+            palette: item.palette.slice(0, 4).map((hex) => String(hex).slice(0, 9)),
+            values: item.values && typeof item.values === 'object' ? item.values : {},
+            settings: item.settings && typeof item.settings === 'object' ? item.settings : {}
+          }));
+        state.collections = cleanCollections.concat(state.collections).slice(0, 40);
+
         renderSaved();
+        renderCollections();
         persistNow();
-        announce(`${clean.length} mood${clean.length === 1 ? '' : 's'} imported`);
+        announce(`${clean.length} mood${clean.length === 1 ? '' : 's'}, ${cleanCollections.length} palette${cleanCollections.length === 1 ? '' : 's'} imported`);
         event.target.value = '';
       };
       reader.readAsText(file);
@@ -1437,6 +1705,7 @@
     syncSettings();
     buildSliders();
     renderPresets();
+    renderCollections();
     renderVibes();
     renderSaved();
     renderHistory();

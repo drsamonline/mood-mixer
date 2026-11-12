@@ -10,15 +10,15 @@
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-  <link rel="manifest" href="../manifest.json?v=2.3.0">
+  <link rel="manifest" href="../manifest.json?v=2.4.0">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Mood Mixer — live color playground">
   <meta property="og:description" content="Sliders in, palettes out. Copy hex, check contrast, export CSS, JSON, Tailwind or PNG.">
   <meta property="og:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
-  <link rel="stylesheet" href="../theme.css?v=2.3.0">
-  <link rel="stylesheet" href="../style.css?v=2.3.0">
+  <link rel="stylesheet" href="../theme.css?v=2.4.0">
+  <link rel="stylesheet" href="../style.css?v=2.4.0">
 </head>
 
 <body>
@@ -242,6 +242,33 @@
 
         <section class="panel-section">
           <div class="panel-header">
+            <h2>Vision check</h2><span class="history-note">Same palette, three colour-vision types</span>
+          </div>
+          <div id="visionContainer" class="vision-list"></div>
+        </section>
+
+        <section class="panel-section">
+          <div class="panel-header">
+            <h2>From an image</h2><span class="history-note">Stays on this device</span>
+          </div>
+          <label class="drop-zone" id="imageDrop">
+            <input type="file" id="imageInput" accept="image/*" hidden>
+            <span class="drop-title">Drop a photo or pick a file</span>
+            <span class="drop-sub">Five dominant colours, read in the browser. Nothing is uploaded.</span>
+          </label>
+          <div id="imagePalette" class="image-palette"></div>
+        </section>
+
+        <section class="panel-section">
+          <div class="panel-header">
+            <h2>Collections</h2>
+            <button id="saveCollectionBtn" class="btn btn-sm" type="button">+ Save palette</button>
+          </div>
+          <div id="collectionsContainer" class="collections"></div>
+        </section>
+
+        <section class="panel-section">
+          <div class="panel-header">
             <h2>Vibe Words</h2><button id="addVibeBtn" class="btn btn-sm" type="button">+ Add</button>
           </div>
           <div id="vibeDictionary" class="vibe-dictionary"></div>
@@ -249,7 +276,8 @@
 
         <section class="panel-section">
           <div class="panel-header">
-            <h2>Palette History</h2><span class="history-note">Recent colors</span>
+            <h2>Palette History</h2>
+            <button id="undoReorderBtn" class="btn btn-sm" type="button" hidden>Undo reorder</button>
           </div>
           <div id="colorHistoryContainer" class="color-history"></div>
         </section>
@@ -314,8 +342,8 @@
     </form>
   </dialog>
 
-  <script src="../color-core.js?v=2.3.0"></script>
-  <script src="../script.js?v=2.3.0"></script>
+  <script src="../color-core.js?v=2.4.0"></script>
+  <script src="../script.js?v=2.4.0"></script>
 </body>
 
 </html>
