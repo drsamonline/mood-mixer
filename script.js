@@ -299,8 +299,9 @@
     },
 
     step() {
+      const boost = 0.5 + (Number(state.values.sparkle ?? 50) / 100) * 1.5;
       this.dots.forEach((dot) => {
-        dot.y -= dot.speed;
+        dot.y -= dot.speed * boost;
         dot.x += dot.drift;
         if (dot.y < -8) {
           dot.y = this.height + 8;
@@ -702,7 +703,6 @@
     scheduleHistory(palette);
     schedulePersist();
     scheduleHash();
-    if (particles.running) particles.seed();
   }
 
   function scheduleHistory(palette) {
