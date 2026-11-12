@@ -894,6 +894,7 @@
 
     on('copyPaletteBtn', 'click', () => copyText(C.palette(current, state.harmony).join(', '), 'Four-color palette copied'));
     on('copyHexBtn', 'click', () => copyText(C.toHex(current), `${C.toHex(current)} copied`));
+    on('upiCopyBtn', 'click', () => copyText('drsohilboi@ybl', 'UPI ID drsohilboi@ybl copied'));
 
     on('exportCssBtn', 'click', () => download('mood-mixer-palette.css', paletteCss(C.palette(current, state.harmony)), 'text/css'));
     on('exportJsonBtn', 'click', () => download('mood-mixer-palette.json', paletteJson(C.palette(current, state.harmony)), 'application/json'));

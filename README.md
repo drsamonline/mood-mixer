@@ -15,35 +15,43 @@ A private, offline-ready color playground. Move three sliders, get a coordinated
 [![No tracking](https://img.shields.io/badge/tracking-none-2ea44f.svg)](#privacy)
 [![Vanilla JS](https://img.shields.io/badge/built%20with-HTML%20%7C%20CSS%20%7C%20JS-f7df1e.svg)](color-core.js)
 [![GitHub Sponsors](https://img.shields.io/badge/sponsor-GitHub-ea4aaa.svg)](https://github.com/sponsors/drsamonline)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-matneo-ff5e5b.svg)](https://ko-fi.com/matneo)
+[![UPI](https://img.shields.io/badge/UPI-drsohilboi%40ybl-2ea44f.svg)](#support)
 [![Stars](https://img.shields.io/github/stars/drsamonline/mood-mixer?style=social)](https://github.com/drsamonline/mood-mixer/stargazers)
 
 </div>
 
 ---
 
-## Sponsor
+<!-- support:sweep -->
+## Support
 
-Mood Mixer is free, has no ads, and collects nothing. Sponsorship pays for hosting, icons and the time that goes into new palettes and harmony modes.
+<img src="docs/assets/support-portrait.jpg" width="72" height="72" alt="Dr. Sohil Momin" align="left" style="border-radius:50%;margin-right:1rem">
+
+Free, offline, accountless — and staying that way. If it earned its keep:
+
+| | |
+|---|---|
+| UPI (India) | `drsohilboi@ybl` — payee Dr. Sohil Momin, open amount, or scan [the QR](docs/assets/upi-qr.svg) |
+| GitHub Sponsors | [github.com/sponsors/drsamonline](https://github.com/sponsors/drsamonline) |
+| Ko-fi | [ko-fi.com/matneo](https://ko-fi.com/matneo) |
+| PayPal | [paypal.me/drsohilmomin](https://paypal.me/drsohilmomin?locale.x=en_GB&country.x=IN) |
+| My books | [Amazon author store](https://www.amazon.com/stores/author/B08ZT331LY/allbooks?ccs_id=aed72b9f-71d9-41dc-adee-e9368a317acc) |
+| More apps | [drsamonline.github.io](https://drsamonline.github.io/) |
+| Email | [sohilmomin2000@gmail.com](mailto:sohilmomin2000@gmail.com) |
+
+Nothing is gated behind it: no accounts, no tracking, no network requests.
 
 <div align="center">
 
 [![Sponsor on GitHub](https://img.shields.io/badge/%E2%9D%A4%20Sponsor-GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/drsamonline)
-[![Star the repo](https://img.shields.io/badge/%E2%AD%90%20Star-mood--mixer-6158d9?style=for-the-badge&logo=github&logoColor=white)](https://github.com/drsamonline/mood-mixer/stargazers)
-[![Open an issue](https://img.shields.io/badge/%E2%9C%8E%20Ideas-open%20an%20issue-24232b?style=for-the-badge&logo=github&logoColor=white)](https://github.com/drsamonline/mood-mixer/issues)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-matneo-ff5e5b?style=for-the-badge&logo=kofi&logoColor=white)](https://ko-fi.com/matneo)
+[![PayPal](https://img.shields.io/badge/PayPal-drsohilmomin-00457c?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/drsohilmomin?locale.x=en_GB&country.x=IN)
+[![Books](https://img.shields.io/badge/Books-Amazon%20author%20store-ff9900?style=for-the-badge&logo=amazon&logoColor=white)](https://www.amazon.com/stores/author/B08ZT331LY/allbooks?ccs_id=aed72b9f-71d9-41dc-adee-e9368a317acc)
 
 </div>
 
-| Tier | What it covers |
-|---|---|
-| **One-time** | A coffee, a colour, a thank you |
-| **Monthly** | Hosting, icon work, a new harmony mode |
-| **Sponsor logo** | Your name or logo in this README and on the landing page |
-
-**Sponsors**
-
-No sponsors yet. The first name listed here gets a link of their choice.
-
-The same sponsor block appears on the [landing page](https://drsamonline.github.io/mood-mixer/#sponsor) and inside the mixer, so people who never open GitHub can still support the project.
+The same block is on the [landing page](https://drsamonline.github.io/mood-mixer/#support) and in the mixer's footer bar, with the UPI ID copyable and the QR scannable, so nobody has to open GitHub to support the work.
 
 ---
 
@@ -56,6 +64,8 @@ The same sponsor block appears on the [landing page](https://drsamonline.github.
 | Neon theme, dark UI | Mobile |
 |---|---|
 | ![Neon theme](screenshots/mixer-neon.png) | ![Mixer on a phone](screenshots/mixer-mobile.png) |
+
+![Support block: UPI ID, QR, Ko-fi, PayPal and books](screenshots/support.png)
 
 All captures are real renders of this repository, taken at 1440×900, 1440×1000 and 390×844.
 
@@ -126,6 +136,7 @@ Any static server works. Opening `index.html` directly also works; only the serv
 ├── service-worker.js       # Offline shell
 ├── icons/                  # 192, 512, maskable, apple-touch icons
 ├── screenshots/            # Real captures used in this README
+├── docs/assets/            # Support portrait and UPI QR
 ├── 404.html                # Not-found page
 ├── robots.txt, sitemap.xml # Crawler hints
 └── LICENSE                 # MIT
