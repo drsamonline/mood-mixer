@@ -1,4 +1,22 @@
-/* Shared design tokens: color, type, radius, elevation, themes. */
+/* Shared design tokens: color, type, radius, elevation, themes.
+ * No web font is downloaded: the faces below resolve to what the device already has,
+ * so typography renders offline from the first paint.
+ */
+@font-face {
+  font-family: 'MoodSans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: local('Inter'), local('Segoe UI'), local('SF Pro Text'), local('Helvetica Neue'), local('Arial');
+}
+
+@font-face {
+  font-family: 'MoodDisplay';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: local('Inter'), local('Segoe UI Semibold'), local('SF Pro Display'), local('Helvetica Neue'), local('Arial');
+}
 :root {
   --color-primary: #6158d9;
   --color-primary-contrast: #ffffff;
@@ -11,8 +29,8 @@
   --color-border: color-mix(in srgb, #24232b 14%, transparent);
   --color-sponsor: #d6336c;
   --color-sponsor-soft: rgba(214, 51, 108, 0.12);
-  --font-heading: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --font-body: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-heading: 'MoodDisplay', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-body: 'MoodSans', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --radius: 22px;
   --radius-sm: 12px;
   --shadow: 0 18px 60px rgba(26, 24, 40, 0.16);

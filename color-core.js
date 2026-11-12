@@ -308,6 +308,21 @@
     return picked.map((color) => toHex(color));
   }
 
+  /* Pinned palette links: four hexes in one token, e.g. q=7ec8e3-4a90d9-1f2c3d-ffffff */
+  function pinnedToken(palette) {
+    return (palette || [])
+      .map((hex) => String(hex).replace('#', '').toLowerCase())
+      .filter((hex) => /^[0-9a-f]{6}$/.test(hex))
+      .slice(0, 4)
+      .join('-');
+  }
+
+  function parsePinned(token) {
+    const parts = String(token || '').split('-').filter((part) => /^[0-9a-f]{6}$/i.test(part));
+    if (parts.length < 2) return null;
+    return parts.slice(0, 4).map((part) => '#' + part.toLowerCase());
+  }
+
   /* Compact state token: #p=xxxxxx carries the whole palette in six characters. */
   const MODEL_KEYS = ['hsl', 'rgb', 'hsv'];
   const BLEND_KEYS = ['normal', 'vibrant', 'pastel', 'mono'];
@@ -385,6 +400,8 @@
     vibeForHue,
     encodeToken,
     decodeToken,
+    pinnedToken,
+    parsePinned,
     simulate,
     dominant,
     describe,

@@ -10,15 +10,15 @@
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-  <link rel="manifest" href="../manifest.json?v=2.4.0">
+  <link rel="manifest" href="../manifest.json?v=2.5.0">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Mood Mixer — live color playground">
   <meta property="og:description" content="Sliders in, palettes out. Copy hex, check contrast, export CSS, JSON, Tailwind or PNG.">
   <meta property="og:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
-  <link rel="stylesheet" href="../theme.css?v=2.4.0">
-  <link rel="stylesheet" href="../style.css?v=2.4.0">
+  <link rel="stylesheet" href="../theme.css?v=2.5.0">
+  <link rel="stylesheet" href="../style.css?v=2.5.0">
 </head>
 
 <body>
@@ -99,6 +99,7 @@
         </div>
       </div>
 
+      <p class="pinned-badge" id="pinnedBadge" hidden>Pinned palette &middot; move a slider to release</p>
       <div class="hero-swatches" id="heroSwatches" aria-label="Four-color palette">
         <button class="hero-swatch hero-swatch-main" id="mainSwatch" type="button" title="Base color">
           <span class="swatch-hex">#7ec8e3</span>
@@ -214,6 +215,7 @@
           </div>
 
           <div class="toggle-row">
+            <label class="lock-check"><input type="checkbox" id="driftToggle"> Slow drift in focus</label>
             <label class="lock-check"><input type="checkbox" id="particlesToggle" checked> Ambient particles</label>
             <label class="lock-check"><input type="checkbox" id="audioToggle"> Sound effects</label>
           </div>
@@ -229,6 +231,7 @@
             <button id="exportPngBtn" class="btn btn-sm" type="button">PNG card</button>
             <button id="copyTextBtn" class="btn btn-sm" type="button">Text list</button>
             <button id="printBtn" class="btn btn-sm" type="button">Print card</button>
+            <button id="exportSheetBtn" class="btn btn-sm" type="button">SVG sheet</button>
           </div>
           <p class="section-hint">Contrast badges on each swatch show the best text color and its WCAG ratio.</p>
         </section>
@@ -342,8 +345,8 @@
     </form>
   </dialog>
 
-  <script src="../color-core.js?v=2.4.0"></script>
-  <script src="../script.js?v=2.4.0"></script>
+  <script src="../color-core.js?v=2.5.0"></script>
+  <script src="../script.js?v=2.5.0"></script>
 </body>
 
 </html>

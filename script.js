@@ -75,6 +75,7 @@
     controlsOpen: Boolean(stored.controlsOpen),
     folderFilter: typeof stored.folderFilter === 'string' ? stored.folderFilter : 'All',
     collections: Array.isArray(stored.collections) ? stored.collections.slice(0, 40) : [],
+    drift: Boolean(stored.drift),
     locks: Object.assign({ hue: false, sat: false, lit: false }, stored.locks || {}),
     lockedValues: Object.assign({ hue: null, sat: null, lit: null }, stored.lockedValues || {})
   };
@@ -90,6 +91,8 @@
   let hashTimer = 0;
   let hudHideTimer = 0;
   let historyOrderBackup = null;
+  let pinnedPalette = null;
+  let driftTimer = 0;
 
   /* ---------- persistence ---------- */
 
@@ -114,7 +117,14 @@
     const params = new URLSearchParams(raw);
     let touched = false;
 
-    /* Short form first: #p=1in8hx */
+    /* Pinned palette: #q=7ec8e3-4a90d9-1f2c3d-ffffff */
+    const pinned = C.parsePinned(params.get('q'));
+    if (pinned) {
+      pinnedPalette = pinned;
+      touched = true;
+    }
+
+    /* Short form: #p=1in8hx */
     const token = params.get('p');
     if (token) {
       const decoded = C.decodeToken(token);
@@ -178,7 +188,8 @@
 
   function hashParams() {
     const params = new URLSearchParams();
-    params.set('p', C.encodeToken(state));
+    if (pinnedPalette) params.set('q', C.pinnedToken(pinnedPalette));
+    else params.set('p', C.encodeToken(state));
     return params;
   }
 
@@ -754,6 +765,23 @@
         announce(`${collection.name || 'Palette'} loaded`);
       });
 
+      const link = document.createElement('button');
+      link.type = 'button';
+      link.className = 'btn btn-sm';
+      link.textContent = 'Link';
+      link.title = 'Copy a link that opens these exact colours';
+      link.addEventListener('click', () => {
+        const base = window.location.origin + window.location.pathname;
+        copyText(`${base}#q=${C.pinnedToken(collection.palette || [])}`, 'Collection link copied');
+      });
+
+      const pin = document.createElement('button');
+      pin.type = 'button';
+      pin.className = 'btn btn-sm';
+      pin.textContent = 'Pin';
+      pin.title = 'Use these exact colours, ignoring the sliders';
+      pin.addEventListener('click', () => setPinned(collection.palette || [], 'Palette pinned'));
+
       const copy = document.createElement('button');
       copy.type = 'button';
       copy.className = 'btn btn-sm';
@@ -770,7 +798,7 @@
         persistNow();
       });
 
-      actions.append(use, copy, remove);
+      actions.append(use, pin, copy, link, remove);
       row.append(main, actions);
       container.appendChild(row);
     });
@@ -946,6 +974,11 @@
     input.addEventListener('keydown', begin);
     input.addEventListener('input', () => {
       begin();
+      if (pinnedPalette) {
+        pinnedPalette = null;
+        const badge = byId('pinnedBadge');
+        if (badge) badge.hidden = true;
+      }
       state.values[slider.id] = Number(input.value);
       output.textContent = input.value;
       input.setAttribute('aria-valuetext', sliderAriaText(label.textContent, input.value));
@@ -1004,6 +1037,10 @@
     if (audio) audio.checked = state.audio;
     const particlesToggle = byId('particlesToggle');
     if (particlesToggle) particlesToggle.checked = state.particles;
+    const driftToggle = byId('driftToggle');
+    if (driftToggle) driftToggle.checked = state.drift;
+    const pinnedBadge = byId('pinnedBadge');
+    if (pinnedBadge) pinnedBadge.hidden = !pinnedPalette;
 
     const root = document.documentElement;
     if (state.theme === 'dark') root.setAttribute('data-theme', 'dark');
@@ -1051,9 +1088,21 @@
     });
   }
 
+  function activePalette() {
+    return pinnedPalette ? pinnedPalette.slice() : C.palette(current, state.harmony);
+  }
+
+  function setPinned(palette, message) {
+    pinnedPalette = palette ? palette.slice(0, 4) : null;
+    const badge = byId('pinnedBadge');
+    if (badge) badge.hidden = !pinnedPalette;
+    if (message) announce(message);
+    updateMood();
+  }
+
   function updateMood() {
     current = C.generate(state);
-    const palette = C.palette(current, state.harmony);
+    const palette = activePalette();
     const hex = palette[0];
 
     const backdrop = byId('colorBackdrop');
@@ -1212,6 +1261,39 @@
     return lines.join('\n');
   }
 
+  function paletteSheet(palette) {
+    const width = 960;
+    const rowHeight = 168;
+    const height = 96 + rowHeight * palette.length + 56;
+    const rows = palette.map((hex, index) => {
+      const rgb = C.hexToRgb(hex) || { r: 0, g: 0, b: 0 };
+      const hsl = C.rgbToHsl(rgb.r, rgb.g, rgb.b);
+      const ink = C.bestInk(rgb);
+      const onWhite = C.contrastRatio(rgb, { r: 255, g: 255, b: 255 });
+      const onBlack = C.contrastRatio(rgb, { r: 17, g: 17, b: 17 });
+      const y = 96 + index * rowHeight;
+      return `
+    <g transform="translate(48 ${y})">
+      <rect width="864" height="${rowHeight - 16}" rx="14" fill="#ffffff" stroke="#e2e0da"/>
+      <rect x="0" y="0" width="${rowHeight - 16}" height="${rowHeight - 16}" rx="14" fill="${hex}"/>
+      <text x="${rowHeight + 8}" y="46" font-family="system-ui, sans-serif" font-size="30" font-weight="700" fill="#24232b">${hex.toUpperCase()}</text>
+      <text x="${rowHeight + 8}" y="82" font-family="system-ui, sans-serif" font-size="16" fill="#777582">rgb(${rgb.r}, ${rgb.g}, ${rgb.b})</text>
+      <text x="${rowHeight + 8}" y="106" font-family="system-ui, sans-serif" font-size="16" fill="#777582">hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)</text>
+      <text x="${rowHeight + 8}" y="130" font-family="system-ui, sans-serif" font-size="15" fill="#24232b">Text on this colour: ${ink.ink} at ${ink.ratio.toFixed(1)}:1</text>
+      <text x="700" y="46" font-family="system-ui, sans-serif" font-size="15" fill="#777582">on white ${onWhite.toFixed(1)}:1</text>
+      <text x="700" y="70" font-family="system-ui, sans-serif" font-size="15" fill="#777582">on black ${onBlack.toFixed(1)}:1</text>
+    </g>`;
+    }).join('');
+
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Mood Mixer palette sheet">
+  <rect width="${width}" height="${height}" fill="#f5f4f1"/>
+  <text x="48" y="46" font-family="system-ui, sans-serif" font-size="24" font-weight="700" fill="#24232b">Mood Mixer — ${currentVibe}</text>
+  <text x="48" y="72" font-family="system-ui, sans-serif" font-size="15" fill="#777582">${HARMONY_LABELS[state.harmony] || state.harmony}${pinnedPalette ? ' · pinned palette' : ''} · ${new Date().toISOString().slice(0, 10)}</text>${rows}
+  <text x="48" y="${height - 24}" font-family="system-ui, sans-serif" font-size="13" fill="#777582">Mood Mixer · drsamonline.github.io/mood-mixer</text>
+</svg>`;
+  }
+
   function exportPng(palette) {
     const width = 1200;
     const height = 630;
@@ -1262,6 +1344,8 @@
     appContainer.classList.toggle('focus-mode', active);
     appContainer.classList.remove('hud-visible');
     document.body.classList.toggle('focus-locked', active);
+    if (active) startDrift();
+    else stopDrift();
     if (button) {
       button.setAttribute('aria-pressed', String(active));
       button.textContent = active ? '\u2715 Exit focus view' : '\u26f6 Focus on color';
@@ -1273,6 +1357,24 @@
     const appContainer = $('.app-container');
     if (!appContainer) return;
     setFocusMode(!appContainer.classList.contains('focus-mode'));
+  }
+
+  function stopDrift() {
+    window.clearInterval(driftTimer);
+    driftTimer = 0;
+  }
+
+  function startDrift() {
+    stopDrift();
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!state.drift || reduced) return;
+    driftTimer = window.setInterval(() => {
+      const appContainer = $('.app-container');
+      if (!appContainer || !appContainer.classList.contains('focus-mode')) return;
+      if (document.hidden) return;
+      state.values.energy = (Number(state.values.energy ?? 50) + 3) % 101;
+      updateMood();
+    }, 4000);
   }
 
   function randomize() {
@@ -1316,7 +1418,7 @@
 
     on('focusModeBtn', 'click', toggleFocusMode);
 
-    on('copyPaletteBtn', 'click', () => copyText(C.palette(current, state.harmony).join(', '), 'Four-color palette copied'));
+    on('copyPaletteBtn', 'click', () => copyText(activePalette().join(', '), 'Four-color palette copied'));
     on('copyHexBtn', 'click', () => copyText(C.toHex(current), `${C.toHex(current)} copied`));
     on('copyLinkBtn', 'click', async () => {
       const url = shareUrl();
@@ -1333,11 +1435,12 @@
     });
     on('upiCopyBtn', 'click', () => copyText('drsohilboi@ybl', 'UPI ID drsohilboi@ybl copied'));
 
-    on('exportCssBtn', 'click', () => download('mood-mixer-palette.css', paletteCss(C.palette(current, state.harmony)), 'text/css'));
-    on('exportJsonBtn', 'click', () => download('mood-mixer-palette.json', paletteJson(C.palette(current, state.harmony)), 'application/json'));
-    on('exportTailwindBtn', 'click', () => download('mood-mixer.tailwind.js', paletteTailwind(C.palette(current, state.harmony)), 'text/javascript'));
-    on('exportPngBtn', 'click', () => exportPng(C.palette(current, state.harmony)));
-    on('copyTextBtn', 'click', () => copyText(paletteText(C.palette(current, state.harmony)), 'Palette copied as text'));
+    on('exportCssBtn', 'click', () => download('mood-mixer-palette.css', paletteCss(activePalette()), 'text/css'));
+    on('exportJsonBtn', 'click', () => download('mood-mixer-palette.json', paletteJson(activePalette()), 'application/json'));
+    on('exportTailwindBtn', 'click', () => download('mood-mixer.tailwind.js', paletteTailwind(activePalette()), 'text/javascript'));
+    on('exportPngBtn', 'click', () => exportPng(activePalette()));
+    on('exportSheetBtn', 'click', () => download('mood-mixer-sheet.svg', paletteSheet(activePalette()), 'image/svg+xml'));
+    on('copyTextBtn', 'click', () => copyText(paletteText(activePalette()), 'Palette copied as text'));
     on('printBtn', 'click', () => {
       announce('Print the palette card from the print dialog');
       window.print();
@@ -1610,6 +1713,13 @@
       schedulePersist();
     });
 
+    on('driftToggle', 'change', (event) => {
+      state.drift = event.target.checked;
+      if (state.drift) startDrift();
+      else stopDrift();
+      schedulePersist();
+    });
+
     on('particlesToggle', 'change', (event) => {
       state.particles = event.target.checked;
       particles.refresh();
@@ -1713,6 +1823,7 @@
     bindEvents();
     bindInstall();
     particles.init();
+    if (state.drift) startDrift();
     updateMood();
     if (fromHash) announce('Loaded palette from link');
     if ('serviceWorker' in navigator && window.isSecureContext) {

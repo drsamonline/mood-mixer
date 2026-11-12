@@ -84,7 +84,9 @@ All captures are real renders of this repository, taken at 1440×900, 1440×1000
 - **Shareable links.** The whole state packs into a six-character code — `#p=1in8hx` — carried in the URL hash; a Copy link button puts the full link on the clipboard. Longer query-style links from earlier versions still open.
 - **Vision check.** The current palette shown as deuteranopia, protanopia and tritanopia see it, beside normal vision.
 - **From an image.** Drop a photo or pick a file: five dominant colours are read in the browser, copyable one by one, or matched back to the sliders. Nothing is uploaded.
-- **Collections.** Save the four colours as a named palette, restore it with every setting, copy it, delete it. Collections travel in the JSON backup.
+- **Collections.** Save the four colours as a named palette, restore it with every setting, pin it, copy it, share it as a link, delete it. Collections travel in the JSON backup.
+- **Pinned palettes.** A collection can be pinned, and a pinned palette travels as `#q=7ec8e3-4a90d9-1f2c3d-ffffff` — the exact four colours, not a re-derivation. Moving a slider releases the pin.
+- **SVG sheet.** A printable, self-contained SVG with every colour's hex, RGB, HSL and contrast against white and black.
 - **Readable pairs.** Three text-on-background suggestions from the current palette, each graded, each copying its CSS on click.
 - **Saved moods and history.** Save, rename, move between folders, load and delete moods; each mood shows its four colours as a thumbnail; filter by folder; a 12-entry palette history you can drag to reorder — with an Undo reorder button — and restore. Import and export a JSON backup.
 - **Print card.** One click prints the palette as a clean card — vibe, hex, RGB, HSL and the four colours in a 2×2 grid, nothing else.
@@ -93,13 +95,14 @@ All captures are real renders of this repository, taken at 1440×900, 1440×1000
 - **Randomise from the header.** One button in the header, or `R`, reshuffles every slider; undo puts it back.
 - **Four UI themes, dark mode, high contrast.** Modern, minimalist, retro and neon, each with its own type and colour tokens.
 - **Sound and particles.** Optional WebAudio ticks, and an ambient particle layer that follows the sparkle slider.
+- **Focus drift.** Optional slow hue drift while in focus mode, off by default, skipped when the system asks for reduced motion.
 - **Backdrop-aware text.** Footer and on-colour text flip between near-black and white based on the contrast ratio of whatever colour is behind them.
 - **Works offline.** Installable PWA, with an install button that appears in the header when the browser offers one. The service worker precaches 19 files, serves network-first so a deploy shows on the next load, and answers from cache the moment the network is gone. No request leaves the origin at any point.
 - **Keyboard.** `F` focus, `R` random, `S` save, `C` copy hex, `Esc` leave focus mode, `Ctrl/Cmd+Z` undo, `?` for the full list — the same list is a button in the mixer.
 
 ## Privacy
 
-Everything stays in your browser. State lives in `localStorage` under `moodMixerState`. There are no cookies, no analytics, no fonts or scripts fetched from third parties, and no requests to any server after the page loads. Verified with the network switched off: both pages render, the sliders move and the presets apply with zero external requests.
+Everything stays in your browser. State lives in `localStorage` under `moodMixerState`. There are no cookies, no analytics, no fonts or scripts fetched from third parties, and no requests to any server after the page loads. Typography uses `local()` `@font-face` sources, so it resolves to faces the device already has instead of downloading a webfont. Verified with the network switched off: both pages render, the sliders move and the presets apply with zero external requests.
 
 ## Project pages
 
