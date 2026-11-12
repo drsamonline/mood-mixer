@@ -1,0 +1,35 @@
+{
+  "name": "mood-mixer",
+  "version": "2.0.0",
+  "private": true,
+  "description": "A private, offline-ready color playground: sliders in, palettes out.",
+  "homepage": "https://drsamonline.github.io/mood-mixer/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/drsamonline/mood-mixer.git"
+  },
+  "license": "MIT",
+  "author": "Dr Sohil Momin",
+  "scripts": {
+    "start": "npx --yes serve . -l 4173",
+    "lint:html": "npx --yes html-validate \"*.html\" \"mixer/*.html\"",
+    "lint:css": "npx --yes stylelint \"*.css\"",
+    "lint:js": "npx --yes eslint@8 --no-eslintrc --env browser,es2022 --parser-options=ecmaVersion:2022 --rule '{\"no-unused-vars\":\"warn\",\"no-undef\":\"error\"}' color-core.js landing.js script.js service-worker.js",
+    "check": "npm run lint:js && npm run lint:html && npm run lint:css"
+  },
+  "keywords": [
+    "color",
+    "palette",
+    "mood",
+    "design-tool",
+    "pwa",
+    "offline",
+    "vanilla-js"
+  ],
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions",
+    "last 2 Safari versions",
+    "last 2 Edge versions"
+  ]
+}

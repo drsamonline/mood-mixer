@@ -1,0 +1,57 @@
+{
+  "name": "Mood Mixer",
+  "short_name": "Mood Mixer",
+  "description": "A private, offline-ready color playground. Tune energy, calmness and sparkle to get a four-color palette.",
+  "id": "./",
+  "start_url": "./mixer/",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#f5f4f1",
+  "theme_color": "#6158d9",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": [
+    "design",
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open the mixer",
+      "short_name": "Mixer",
+      "url": "./mixer/",
+      "description": "Jump straight into the color playground"
+    },
+    {
+      "name": "About Mood Mixer",
+      "short_name": "About",
+      "url": "./",
+      "description": "How the mixer works"
+    }
+  ]
+}

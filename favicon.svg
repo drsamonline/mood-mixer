@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Mood Mixer">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6158d9"/>
+      <stop offset="0.55" stop-color="#7ec8e3"/>
+      <stop offset="1" stop-color="#e3a87e"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#g)"/>
+  <path d="M32 12 36.4 25.6 50 30 36.4 34.4 32 48 27.6 34.4 14 30 27.6 25.6Z" fill="#ffffff" fill-opacity="0.95"/>
+</svg>

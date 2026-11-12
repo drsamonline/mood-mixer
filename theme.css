@@ -1,0 +1,123 @@
+/* Shared design tokens: color, type, radius, elevation, themes. */
+:root {
+  --color-primary: #6158d9;
+  --color-primary-contrast: #ffffff;
+  --color-bg: #f5f4f1;
+  --color-surface: rgba(255, 255, 255, 0.9);
+  --color-surface-solid: #ffffff;
+  --color-text: #24232b;
+  --color-text-on-color: #ffffff;
+  --color-muted: #777582;
+  --color-border: color-mix(in srgb, #24232b 14%, transparent);
+  --color-sponsor: #d6336c;
+  --color-sponsor-soft: rgba(214, 51, 108, 0.12);
+  --font-heading: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-body: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --radius: 22px;
+  --radius-sm: 12px;
+  --shadow: 0 18px 60px rgba(26, 24, 40, 0.16);
+  --transition-speed: 0.4s;
+  --slider-thumb-size: 22px;
+  --slider-track-height: 8px;
+}
+
+[data-theme="dark"] {
+  --color-bg: #11111a;
+  --color-surface: rgba(28, 28, 42, 0.97);
+  --color-surface-solid: #242437;
+  --color-text: #f7f6ff;
+  --color-muted: #d0cede;
+  --color-border: color-mix(in srgb, #f7f6ff 18%, transparent);
+  --shadow: 0 12px 36px color-mix(in srgb, #000000 38%, transparent);
+}
+
+[data-contrast="high"] {
+  --color-text: #111111;
+  --color-muted: #333333;
+  --color-surface: rgba(255, 255, 255, 0.99);
+  --color-surface-solid: #ffffff;
+  --color-border: #111111;
+  --shadow: 0 0 0 2px #111111;
+}
+
+[data-contrast="high"][data-theme="dark"] {
+  --color-text: #ffffff;
+  --color-muted: #eeeeee;
+  --color-bg: #000000;
+  --color-surface: rgba(10, 10, 10, 0.99);
+  --color-surface-solid: #151515;
+  --color-border: #ffffff;
+  --shadow: 0 0 0 2px #ffffff;
+}
+
+/* UI themes: each one changes type, corners and color, not just fonts. */
+[data-ui-theme="retro"] {
+  --color-primary: #b1442a;
+  --color-primary-contrast: #fff8ee;
+  --color-bg: #f3e8d3;
+  --color-surface: rgba(255, 249, 238, 0.94);
+  --color-surface-solid: #fffaf1;
+  --color-text: #33261a;
+  --color-muted: #7a6349;
+  --color-border: color-mix(in srgb, #33261a 24%, transparent);
+  --font-heading: Georgia, 'Times New Roman', serif;
+  --font-body: Georgia, 'Times New Roman', serif;
+  --radius: 6px;
+  --radius-sm: 4px;
+  --shadow: 4px 4px 0 color-mix(in srgb, #33261a 22%, transparent);
+}
+
+[data-ui-theme="minimalist"] {
+  --color-primary: #111111;
+  --color-primary-contrast: #ffffff;
+  --color-bg: #fbfbfa;
+  --color-surface: rgba(255, 255, 255, 0.96);
+  --color-muted: #5f5f5f;
+  --radius: 3px;
+  --radius-sm: 2px;
+  --shadow: none;
+}
+
+[data-ui-theme="neon"] {
+  --color-primary: #00f5d4;
+  --color-primary-contrast: #04121a;
+  --color-bg: #06060f;
+  --color-surface: rgba(12, 12, 28, 0.92);
+  --color-surface-solid: #0c0c1c;
+  --color-text: #e6fbff;
+  --color-muted: #8fa1b8;
+  --color-border: rgba(0, 245, 212, 0.38);
+  --font-heading: 'Courier New', ui-monospace, monospace;
+  --font-body: 'Courier New', ui-monospace, monospace;
+  --radius: 10px;
+  --radius-sm: 8px;
+  --shadow: 0 0 0 1px rgba(0, 245, 212, 0.3), 0 18px 60px rgba(0, 245, 212, 0.14);
+}
+
+[data-ui-theme="neon"] .btn,
+[data-ui-theme="neon"] .app-header,
+[data-ui-theme="neon"] .controls-panel {
+  text-shadow: 0 0 8px rgba(0, 245, 212, 0.4);
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 999;
+  padding: 10px 16px;
+  border-radius: 0 0 var(--radius-sm) 0;
+  background: var(--color-surface-solid);
+  color: var(--color-text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
