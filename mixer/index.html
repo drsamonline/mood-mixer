@@ -10,15 +10,15 @@
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-  <link rel="manifest" href="../manifest.json">
+  <link rel="manifest" href="../manifest.json?v=2.1.0">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Mood Mixer — live color playground">
   <meta property="og:description" content="Sliders in, palettes out. Copy hex, check contrast, export CSS, JSON, Tailwind or PNG.">
   <meta property="og:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
-  <link rel="stylesheet" href="../theme.css">
-  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../theme.css?v=2.1.0">
+  <link rel="stylesheet" href="../style.css?v=2.1.0">
 </head>
 
 <body>
@@ -87,7 +87,8 @@
         <div class="undo-row">
           <button id="undoBtn" class="btn btn-sm" type="button" disabled title="Undo (Ctrl+Z)">Undo</button>
           <button id="redoBtn" class="btn btn-sm" type="button" disabled title="Redo (Ctrl+Shift+Z)">Redo</button>
-          <span class="shortcut-hint">Keys: F focus &middot; R random &middot; S save &middot; C copy</span>
+          <button id="shortcutsBtn" class="btn btn-sm" type="button" aria-haspopup="dialog">Keys</button>
+          <span class="shortcut-hint">F focus &middot; R random &middot; S save &middot; C copy &middot; ? help</span>
         </div>
       </div>
 
@@ -124,6 +125,13 @@
           <button id="regenerateVibeBtn" class="btn btn-sm" type="button" title="Pick a new vibe word">New vibe</button>
           <button id="sentenceBtn" class="btn btn-sm" type="button" title="Turn the vibe into a sentence">Sentence</button>
         </div>
+
+        <section class="panel-section">
+          <div class="panel-header">
+            <h2>Presets</h2><span class="history-note">One click, whole mood</span>
+          </div>
+          <div class="preset-grid" id="presetGrid"></div>
+        </section>
 
         <section class="panel-section">
           <div class="panel-header">
@@ -212,6 +220,7 @@
             <button id="exportJsonBtn" class="btn btn-sm" type="button">JSON</button>
             <button id="exportTailwindBtn" class="btn btn-sm" type="button">Tailwind</button>
             <button id="exportPngBtn" class="btn btn-sm" type="button">PNG card</button>
+            <button id="copyTextBtn" class="btn btn-sm" type="button">Text list</button>
           </div>
           <p class="section-hint">Contrast badges on each swatch show the best text color and its WCAG ratio.</p>
         </section>
@@ -272,8 +281,25 @@
     </footer>
   </div>
 
-  <script src="../color-core.js"></script>
-  <script src="../script.js"></script>
+  <dialog id="shortcutsDialog" class="keys-dialog" aria-labelledby="keysTitle">
+    <h2 id="keysTitle">Keyboard</h2>
+    <dl>
+      <dt>F</dt><dd>Focus mode &mdash; the screen becomes the colour</dd>
+      <dt>Esc</dt><dd>Leave focus mode</dd>
+      <dt>R</dt><dd>Randomise every slider</dd>
+      <dt>S</dt><dd>Save the current mood</dd>
+      <dt>C</dt><dd>Copy the hex value</dd>
+      <dt>Ctrl / Cmd + Z</dt><dd>Undo</dd>
+      <dt>Ctrl / Cmd + Shift + Z</dt><dd>Redo</dd>
+      <dt>?</dt><dd>This list</dd>
+    </dl>
+    <form method="dialog">
+      <button class="btn btn-sm" type="submit">Close</button>
+    </form>
+  </dialog>
+
+  <script src="../color-core.js?v=2.1.0"></script>
+  <script src="../script.js?v=2.1.0"></script>
 </body>
 
 </html>

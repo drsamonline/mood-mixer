@@ -1,35 +1,53 @@
-/* Mood Mixer service worker: precache the shell, serve network-first with cache fallback. */
-const CACHE_VERSION = 'v10';
+/* Mood Mixer service worker.
+ * Strategy: network-first for everything same-origin, cache as the fallback.
+ * After the first load the app runs with no network at all.
+ */
+const CACHE_VERSION = 'v11';
 const CACHE_NAME = `mood-mixer-${CACHE_VERSION}`;
+const ASSET_VERSION = '2.1.0';
 
 const PRECACHE = [
   './',
   './index.html',
+  './404.html',
   './mixer/',
   './mixer/index.html',
-  './404.html',
+  `./theme.css?v=${ASSET_VERSION}`,
+  `./landing.css?v=${ASSET_VERSION}`,
+  `./style.css?v=${ASSET_VERSION}`,
+  `./color-core.js?v=${ASSET_VERSION}`,
+  `./landing.js?v=${ASSET_VERSION}`,
+  `./script.js?v=${ASSET_VERSION}`,
+  `./manifest.json?v=${ASSET_VERSION}`,
+  './favicon.svg',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-maskable-512.png',
+  './icons/apple-touch-icon.png',
+  './docs/assets/support-portrait.jpg',
+  './docs/assets/upi-qr.svg'
+];
+
+/* Old shells cached the bare filenames; drop them so a stale copy cannot win. */
+const LEGACY_ASSETS = [
   './theme.css',
   './landing.css',
   './style.css',
   './color-core.js',
   './landing.js',
   './script.js',
-  './manifest.json',
-  './favicon.svg',
-  './icons/icon-192.png',
-  './icons/icon-512.png'
+  './manifest.json'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
-    // Cache files individually so one 404 cannot abort the whole install.
     await Promise.all(PRECACHE.map(async (path) => {
       try {
         const response = await fetch(new Request(path, { cache: 'reload' }));
         if (response.ok) await cache.put(path, response);
       } catch (error) {
-        // A missing optional file must not break offline support.
+        // One missing optional file must not abort the install.
       }
     }));
     await self.skipWaiting();
@@ -44,6 +62,12 @@ self.addEventListener('activate', (event) => {
   })());
 });
 
+async function cachePut(request, response) {
+  if (!response || !response.ok) return;
+  const cache = await caches.open(CACHE_NAME);
+  await cache.put(request, response.clone());
+}
+
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   if (request.method !== 'GET') return;
@@ -55,10 +79,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith((async () => {
       try {
         const response = await fetch(request);
-        if (response.ok) {
-          const cache = await caches.open(CACHE_NAME);
-          cache.put(request, response.clone());
-        }
+        await cachePut(request, response);
         return response;
       } catch (error) {
         const cached = await caches.match(request);
@@ -69,22 +90,21 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  /* Network first: a deploy is visible on the next load, and the cache only
+   * answers when the network is gone. */
   event.respondWith((async () => {
-    const cached = await caches.match(request);
-    if (cached) {
-      fetch(request).then((response) => {
-        if (response.ok) caches.open(CACHE_NAME).then((cache) => cache.put(request, response));
-      }).catch(() => {});
-      return cached;
-    }
     try {
       const response = await fetch(request);
-      if (response.ok) {
-        const cache = await caches.open(CACHE_NAME);
-        cache.put(request, response.clone());
-      }
+      await cachePut(request, response);
       return response;
     } catch (error) {
+      const cached = await caches.match(request);
+      if (cached) return cached;
+      const legacy = LEGACY_ASSETS.find((path) => url.pathname.endsWith(path.replace('./', '/')));
+      if (legacy) {
+        const fallback = await caches.match(legacy);
+        if (fallback) return fallback;
+      }
       return Response.error();
     }
   })());

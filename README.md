@@ -74,12 +74,13 @@ All captures are real renders of this repository, taken at 1440×900, 1440×1000
 ## What it does
 
 - **Three sliders, one colour.** Energy, calmness and sparkle drive hue, saturation and lightness. Watch the whole palette move with them.
+- **Six presets.** Dawn, Dusk, Ocean, Forest, Ember, Neon — one click sets the sliders, harmony and blend together.
 - **Six harmony schemes.** Tetrad, complement, analogous, triad, split complement, monochrome.
 - **Three colour models.** HSL, RGB and HSV, plus normal, vibrant, pastel and mono blend modes.
 - **WCAG contrast on every swatch.** Each palette colour shows its best text colour and the ratio that goes with it, graded AA or AAA.
 - **Custom sliders.** Add sliders that drive hue, saturation or lightness, rename them, remove them.
 - **Locks.** Freeze hue, saturation or lightness and move everything else.
-- **Exports.** Copy hex, copy the palette, or download CSS variables, JSON, a Tailwind config or a 1200×630 PNG card.
+- **Exports.** Copy hex, copy the palette, copy it as a text list, or download CSS variables, JSON, a Tailwind config or a 1200×630 PNG card.
 - **Shareable links.** The full state lives in the URL hash and a Copy link button puts it on the clipboard, so a palette can be sent as a link.
 - **Saved moods and history.** Save, rename, load and delete moods; a 12-entry palette history with restore. Import and export a JSON backup.
 - **Undo and redo.** Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, or the buttons.
@@ -87,12 +88,12 @@ All captures are real renders of this repository, taken at 1440×900, 1440×1000
 - **Randomise from the header.** One button in the header, or `R`, reshuffles every slider; undo puts it back.
 - **Four UI themes, dark mode, high contrast.** Modern, minimalist, retro and neon, each with its own type and colour tokens.
 - **Sound and particles.** Optional WebAudio ticks, and an ambient particle layer that follows the sparkle slider.
-- **Works offline.** Installable PWA with a precached shell.
-- **Keyboard.** `F` focus, `R` random, `S` save, `C` copy hex, `Esc` leave focus mode, `Ctrl/Cmd+Z` undo.
+- **Works offline.** Installable PWA. The service worker precaches 19 files, serves network-first so a deploy shows on the next load, and answers from cache the moment the network is gone. No request leaves the origin at any point.
+- **Keyboard.** `F` focus, `R` random, `S` save, `C` copy hex, `Esc` leave focus mode, `Ctrl/Cmd+Z` undo, `?` for the full list — the same list is a button in the mixer.
 
 ## Privacy
 
-Everything stays in your browser. State lives in `localStorage` under `moodMixerState`. There are no cookies, no analytics, no fonts or scripts fetched from third parties, and no requests to any server after the page loads.
+Everything stays in your browser. State lives in `localStorage` under `moodMixerState`. There are no cookies, no analytics, no fonts or scripts fetched from third parties, and no requests to any server after the page loads. Verified with the network switched off: both pages render, the sliders move and the presets apply with zero external requests.
 
 ## Project pages
 

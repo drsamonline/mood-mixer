@@ -28,6 +28,15 @@
     { id: 'sparkle', label: 'Sparkle Factor' }
   ];
 
+  const PRESETS = [
+    { name: 'Dawn', energy: 34, calmness: 72, sparkle: 46, harmony: 'analogous', blend: 'pastel' },
+    { name: 'Dusk', energy: 58, calmness: 46, sparkle: 62, harmony: 'split', blend: 'normal' },
+    { name: 'Ocean', energy: 46, calmness: 64, sparkle: 40, harmony: 'mono', blend: 'normal' },
+    { name: 'Forest', energy: 62, calmness: 58, sparkle: 30, harmony: 'triad', blend: 'normal' },
+    { name: 'Ember', energy: 88, calmness: 24, sparkle: 78, harmony: 'complement', blend: 'vibrant' },
+    { name: 'Neon', energy: 96, calmness: 18, sparkle: 100, harmony: 'tetrad', blend: 'vibrant' }
+  ];
+
   const DEFAULT_VIBES = [
     'Serene', 'Calm', 'Peaceful', 'Tranquil', 'Mellow', 'Gentle', 'Soft',
     'Energetic', 'Vibrant', 'Bold', 'Dynamic', 'Electric', 'Lively', 'Zesty',
@@ -473,6 +482,53 @@
     });
   }
 
+  function renderPresets() {
+    const grid = byId('presetGrid');
+    if (!grid) return;
+    grid.replaceChildren(...PRESETS.map((preset) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'preset-btn';
+      button.dataset.preset = preset.name;
+
+      const swatches = document.createElement('span');
+      swatches.className = 'preset-swatches';
+      const preview = C.palette(C.generate({
+        values: { energy: preset.energy, calmness: preset.calmness, sparkle: preset.sparkle },
+        model: 'hsl',
+        blend: preset.blend,
+        custom: []
+      }), preset.harmony);
+      preview.forEach((hex) => {
+        const chip = document.createElement('span');
+        chip.style.backgroundColor = hex;
+        swatches.appendChild(chip);
+      });
+
+      const name = document.createElement('span');
+      name.className = 'preset-name';
+      name.textContent = preset.name;
+
+      button.append(swatches, name);
+      button.addEventListener('click', () => applyPreset(preset));
+      return button;
+    }));
+  }
+
+  function applyPreset(preset) {
+    commitUndo();
+    state.values.energy = preset.energy;
+    state.values.calmness = preset.calmness;
+    state.values.sparkle = preset.sparkle;
+    state.harmony = preset.harmony;
+    state.blend = preset.blend;
+    vibePinned = false;
+    syncSettings();
+    buildSliders();
+    updateMood();
+    tick(620);
+  }
+
   function renderVibes() {
     const container = byId('vibeDictionary');
     if (!container) return;
@@ -818,6 +874,18 @@
     return `// Mood Mixer palette \u2014 ${currentVibe}\nmodule.exports = {\n  theme: {\n    extend: {\n      colors: {\n        mood: {\n${palette.map((hex, index) => `          ${names[index]}: '${hex}',`).join('\n')}\n        },\n      },\n    },\n  },\n};\n`;
   }
 
+  function paletteText(palette) {
+    const info = C.describe(current);
+    const lines = [
+      `Mood Mixer \u2014 ${currentVibe}`,
+      `Base ${info.hex}  rgb(${info.rgb})  hsl(${info.hsl})`,
+      `Harmony ${HARMONY_LABELS[state.harmony] || state.harmony}`,
+      '',
+      ...palette.map((hex, index) => `${index + 1}. ${hex.toUpperCase()}`)
+    ];
+    return lines.join('\n');
+  }
+
   function exportPng(palette) {
     const width = 1200;
     const height = 630;
@@ -943,6 +1011,13 @@
     on('exportJsonBtn', 'click', () => download('mood-mixer-palette.json', paletteJson(C.palette(current, state.harmony)), 'application/json'));
     on('exportTailwindBtn', 'click', () => download('mood-mixer.tailwind.js', paletteTailwind(C.palette(current, state.harmony)), 'text/javascript'));
     on('exportPngBtn', 'click', () => exportPng(C.palette(current, state.harmony)));
+    on('copyTextBtn', 'click', () => copyText(paletteText(C.palette(current, state.harmony)), 'Palette copied as text'));
+
+    const keysDialog = byId('shortcutsDialog');
+    const openKeys = () => {
+      if (keysDialog && typeof keysDialog.showModal === 'function') keysDialog.showModal();
+    };
+    on('shortcutsBtn', 'click', openKeys);
 
     document.querySelectorAll('.copy-color-btn').forEach((button) => {
       button.addEventListener('click', () => {
@@ -1173,6 +1248,10 @@
       } else if (key === 'c') {
         byId('copyHexBtn')?.click();
         event.preventDefault();
+      } else if (event.key === '?' || (key === '/' && event.shiftKey)) {
+        const keysDialog = byId('shortcutsDialog');
+        if (keysDialog && typeof keysDialog.showModal === 'function') keysDialog.showModal();
+        event.preventDefault();
       }
     });
   }
@@ -1182,6 +1261,7 @@
     currentVibe = state.vibes.length ? state.vibes[0] : 'Moody';
     syncSettings();
     buildSliders();
+    renderPresets();
     renderVibes();
     renderSaved();
     renderHistory();
