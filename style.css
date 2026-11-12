@@ -600,8 +600,24 @@ input[type="range"]::-moz-range-thumb {
 .app-container.focus-mode:not(.hud-visible) .app-header,
 .app-container.focus-mode:not(.hud-visible) .hero-vibe-section,
 .app-container.focus-mode:not(.hud-visible) .hero-swatches,
-.app-container.focus-mode:not(.hud-visible) .controls-wrapper {
+.app-container.focus-mode:not(.hud-visible) .controls-wrapper,
+.app-container.focus-mode:not(.hud-visible) .app-support,
+.app-container.focus-mode:not(.hud-visible) .app-footer {
   display: none;
+}
+
+/* Nothing but the color until the screen is touched. */
+.app-container.focus-mode {
+  cursor: pointer;
+}
+
+.app-container.focus-mode .hero-display {
+  padding: 0;
+}
+
+.app-container.focus-mode .hero-vibe-section,
+.app-container.focus-mode .hero-swatches {
+  box-shadow: none;
 }
 
 .app-container.focus-mode .hero-display {

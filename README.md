@@ -83,11 +83,12 @@ All captures are real renders of this repository, taken at 1440×900, 1440×1000
 - **Shareable links.** The full state lives in the URL hash, so a palette can be sent as a link.
 - **Saved moods and history.** Save, rename, load and delete moods; a 12-entry palette history with restore. Import and export a JSON backup.
 - **Undo and redo.** Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, or the buttons.
-- **Focus mode.** Hides everything but the colour. Escape exits.
+- **Focus mode.** One tap on the screen and the whole display becomes the colour — header, card, swatches, controls, support bar and footer all go. Tap anywhere to bring the interface back for a few seconds, or press Escape to leave.
+- **Randomise from the header.** One button in the header, or `R`, reshuffles every slider; undo puts it back.
 - **Four UI themes, dark mode, high contrast.** Modern, minimalist, retro and neon, each with its own type and colour tokens.
 - **Sound and particles.** Optional WebAudio ticks, and an ambient particle layer that follows the sparkle slider.
 - **Works offline.** Installable PWA with a precached shell.
-- **Keyboard.** `F` focus, `R` random, `S` save, `C` copy hex, `Esc` leave focus mode.
+- **Keyboard.** `F` focus, `R` random, `S` save, `C` copy hex, `Esc` leave focus mode, `Ctrl/Cmd+Z` undo.
 
 ## Privacy
 

@@ -849,16 +849,22 @@
       button.textContent = active ? '\u2715 Exit focus view' : '\u26f6 Focus on color';
     }
     window.clearTimeout(hudHideTimer);
-    if (active) {
-      appContainer.classList.add('hud-visible');
-      hudHideTimer = window.setTimeout(() => appContainer.classList.remove('hud-visible'), 3500);
-    }
   }
 
   function toggleFocusMode() {
     const appContainer = $('.app-container');
     if (!appContainer) return;
     setFocusMode(!appContainer.classList.contains('focus-mode'));
+  }
+
+  function randomize() {
+    commitUndo();
+    [...DEFAULTS, ...state.custom].forEach((slider) => {
+      state.values[slider.id] = Math.floor(Math.random() * 101);
+    });
+    buildSliders();
+    updateMood();
+    tick(580);
   }
 
   /* ---------- events ---------- */
@@ -931,15 +937,8 @@
       tick(420);
     });
 
-    on('randomizeBtn', 'click', () => {
-      commitUndo();
-      [...DEFAULTS, ...state.custom].forEach((slider) => {
-        state.values[slider.id] = Math.floor(Math.random() * 101);
-      });
-      buildSliders();
-      updateMood();
-      tick(580);
-    });
+    on('randomizeBtn', 'click', randomize);
+    on('randomizeHeader', 'click', randomize);
 
     on('addSliderBtn', 'click', () => {
       commitUndo();
@@ -1129,7 +1128,7 @@
         toggleFocusMode();
         event.preventDefault();
       } else if (key === 'r') {
-        byId('randomizeBtn')?.click();
+        randomize();
         event.preventDefault();
       } else if (key === 's') {
         byId('saveMoodBtn')?.click();
