@@ -81,16 +81,17 @@ All captures are real renders of this repository, taken at 1440×900, 1440×1000
 - **Custom sliders.** Add sliders that drive hue, saturation or lightness, rename them, remove them.
 - **Locks.** Freeze hue, saturation or lightness and move everything else.
 - **Exports.** Copy hex, copy the palette, copy it as a text list, or download CSS variables, JSON, a Tailwind config or a 1200×630 PNG card.
-- **Shareable links.** The full state lives in the URL hash and a Copy link button puts it on the clipboard, so a palette can be sent as a link.
+- **Shareable links.** The whole state packs into a six-character code — `#p=1in8hx` — carried in the URL hash; a Copy link button puts the full link on the clipboard. Longer query-style links from earlier versions still open.
 - **Readable pairs.** Three text-on-background suggestions from the current palette, each graded, each copying its CSS on click.
-- **Saved moods and history.** Save, rename, move between folders, load and delete moods; filter by folder; a 12-entry palette history you can drag to reorder, with restore. Import and export a JSON backup.
+- **Saved moods and history.** Save, rename, move between folders, load and delete moods; each mood shows its four colours as a thumbnail; filter by folder; a 12-entry palette history you can drag to reorder, with restore. Import and export a JSON backup.
 - **Print card.** One click prints the palette as a clean card — vibe, hex, RGB, HSL and the four colours in a 2×2 grid, nothing else.
 - **Undo and redo.** Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, or the buttons.
 - **Focus mode.** One tap on the screen and the whole display becomes the colour — header, card, swatches, controls, support bar and footer all go. Tap anywhere to bring the interface back for a few seconds, or press Escape to leave.
 - **Randomise from the header.** One button in the header, or `R`, reshuffles every slider; undo puts it back.
 - **Four UI themes, dark mode, high contrast.** Modern, minimalist, retro and neon, each with its own type and colour tokens.
 - **Sound and particles.** Optional WebAudio ticks, and an ambient particle layer that follows the sparkle slider.
-- **Works offline.** Installable PWA. The service worker precaches 19 files, serves network-first so a deploy shows on the next load, and answers from cache the moment the network is gone. No request leaves the origin at any point.
+- **Backdrop-aware text.** Footer and on-colour text flip between near-black and white based on the contrast ratio of whatever colour is behind them.
+- **Works offline.** Installable PWA, with an install button that appears in the header when the browser offers one. The service worker precaches 19 files, serves network-first so a deploy shows on the next load, and answers from cache the moment the network is gone. No request leaves the origin at any point.
 - **Keyboard.** `F` focus, `R` random, `S` save, `C` copy hex, `Esc` leave focus mode, `Ctrl/Cmd+Z` undo, `?` for the full list — the same list is a button in the mixer.
 
 ## Privacy

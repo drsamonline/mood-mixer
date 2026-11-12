@@ -111,6 +111,20 @@
     if (!raw) return false;
     const params = new URLSearchParams(raw);
     let touched = false;
+
+    /* Short form first: #p=1in8hx */
+    const token = params.get('p');
+    if (token) {
+      const decoded = C.decodeToken(token);
+      if (decoded) {
+        state.values = Object.assign({}, state.values, decoded.values);
+        state.model = decoded.model;
+        state.blend = decoded.blend;
+        state.harmony = decoded.harmony;
+        state.background = decoded.background;
+        touched = true;
+      }
+    }
     DEFAULTS.forEach((slider) => {
       const value = Number(params.get(slider.id.slice(0, 2)));
       if (Number.isFinite(value) && params.has(slider.id.slice(0, 2))) {
@@ -162,13 +176,7 @@
 
   function hashParams() {
     const params = new URLSearchParams();
-    params.set('en', String(state.values.energy ?? 50));
-    params.set('ca', String(state.values.calmness ?? 50));
-    params.set('sp', String(state.values.sparkle ?? 50));
-    params.set('model', state.model);
-    params.set('blend', state.blend);
-    params.set('harmony', state.harmony);
-    params.set('bg', state.background);
+    params.set('p', C.encodeToken(state));
     return params;
   }
 
@@ -483,8 +491,15 @@
       const row = document.createElement('div');
       row.className = 'saved-mood-item';
       const swatch = document.createElement('span');
-      swatch.className = 'saved-mood-swatch';
-      swatch.style.backgroundColor = mood.hex || '#888888';
+      swatch.className = 'saved-mood-swatch saved-mood-thumbs';
+      const thumbs = Array.isArray(mood.palette) && mood.palette.length ?
+        mood.palette :
+        [mood.hex || '#888888'];
+      thumbs.slice(0, 4).forEach((hex) => {
+        const chip = document.createElement('span');
+        chip.style.backgroundColor = hex;
+        swatch.appendChild(chip);
+      });
       const info = document.createElement('div');
       info.className = 'saved-mood-info';
       const title = document.createElement('div');
@@ -865,6 +880,10 @@
     paintSwatches(palette);
     renderPairs(palette);
 
+    const backdropInk = C.bestInk(C.hexToRgb(palette[0]) || current);
+    document.documentElement.style.setProperty('--on-backdrop', backdropInk.ink);
+    document.documentElement.setAttribute('data-backdrop-ink', backdropInk.on);
+
     document.querySelectorAll('#slidersContainer input[type="range"], #customSlidersContainer input[type="range"]')
       .forEach((slider) => {
         const min = Number(slider.min || 0);
@@ -1216,6 +1235,7 @@
         id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
         name: name.trim(),
         hex: C.toHex(current),
+        palette: C.palette(current, state.harmony),
         vibe: currentVibe,
         values: snapshotValues(),
         folder: state.folderFilter === 'All' ? 'Unfiled' : state.folderFilter,
@@ -1371,6 +1391,46 @@
     });
   }
 
+  let deferredInstall = null;
+
+  function showInstall(show) {
+    const button = byId('installBtn');
+    if (button) button.hidden = !show;
+  }
+
+  function bindInstall() {
+    const standalone = window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true;
+    if (standalone) {
+      showInstall(false);
+      return;
+    }
+    window.addEventListener('beforeinstallprompt', (event) => {
+      event.preventDefault();
+      deferredInstall = event;
+      showInstall(true);
+    });
+    window.addEventListener('appinstalled', () => {
+      deferredInstall = null;
+      showInstall(false);
+      announce('Mood Mixer installed');
+    });
+    on('installBtn', 'click', async () => {
+      if (!deferredInstall) {
+        announce('Use the browser menu to install this page');
+        return;
+      }
+      deferredInstall.prompt();
+      try {
+        await deferredInstall.userChoice;
+      } catch (error) {
+        // dismissed
+      }
+      deferredInstall = null;
+      showInstall(false);
+    });
+  }
+
   function init() {
     const fromHash = readHash();
     currentVibe = state.vibes.length ? state.vibes[0] : 'Moody';
@@ -1382,6 +1442,7 @@
     renderHistory();
     updateUndoButtons();
     bindEvents();
+    bindInstall();
     particles.init();
     updateMood();
     if (fromHash) announce('Loaded palette from link');

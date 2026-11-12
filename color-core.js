@@ -267,6 +267,57 @@
     return out;
   }
 
+  /* Compact state token: #p=xxxxxx carries the whole palette in six characters. */
+  const MODEL_KEYS = ['hsl', 'rgb', 'hsv'];
+  const BLEND_KEYS = ['normal', 'vibrant', 'pastel', 'mono'];
+  const HARMONY_KEYS = ['tetrad', 'complement', 'analogous', 'triad', 'split', 'mono'];
+
+  function encodeToken(state) {
+    const values = state.values || {};
+    const e = Math.round(clamp(Number(values.energy ?? 50), 0, 100));
+    const c = Math.round(clamp(Number(values.calmness ?? 50), 0, 100));
+    const sp = Math.round(clamp(Number(values.sparkle ?? 50), 0, 100));
+    const model = Math.max(0, MODEL_KEYS.indexOf(state.model));
+    const blend = Math.max(0, BLEND_KEYS.indexOf(state.blend));
+    const harmony = Math.max(0, HARMONY_KEYS.indexOf(state.harmony));
+    const bg = state.background === 'gradient' ? 1 : 0;
+    let n = e;
+    n = n * 101 + c;
+    n = n * 101 + sp;
+    n = n * 3 + model;
+    n = n * 4 + blend;
+    n = n * 6 + harmony;
+    n = n * 2 + bg;
+    return n.toString(36);
+  }
+
+  function decodeToken(token) {
+    const n = parseInt(String(token || ''), 36);
+    if (!Number.isFinite(n) || n < 0) return null;
+    let rest = n;
+    const bg = rest % 2;
+    rest = Math.floor(rest / 2);
+    const harmony = rest % 6;
+    rest = Math.floor(rest / 6);
+    const blend = rest % 4;
+    rest = Math.floor(rest / 4);
+    const model = rest % 3;
+    rest = Math.floor(rest / 3);
+    const sparkle = rest % 101;
+    rest = Math.floor(rest / 101);
+    const calmness = rest % 101;
+    rest = Math.floor(rest / 101);
+    const energy = rest % 101;
+    if (![energy, calmness, sparkle].every((v) => v >= 0 && v <= 100)) return null;
+    return {
+      values: { energy, calmness, sparkle },
+      model: MODEL_KEYS[model] || 'hsl',
+      blend: BLEND_KEYS[blend] || 'normal',
+      harmony: HARMONY_KEYS[harmony] || 'tetrad',
+      background: bg ? 'gradient' : 'solid'
+    };
+  }
+
   function describe(color) {
     const hex = toHex(color);
     return {
@@ -291,6 +342,8 @@
     pairs,
     generate,
     vibeForHue,
+    encodeToken,
+    decodeToken,
     describe,
     HARMONIES
   };

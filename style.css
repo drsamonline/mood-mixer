@@ -1250,3 +1250,47 @@ body.focus-locked {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- install button ---------- */
+[hidden] {
+  display: none !important;
+}
+
+.btn-install {
+  color: var(--color-primary);
+}
+
+/* ---------- backdrop-aware text ---------- */
+.app-footer {
+  color: var(--on-backdrop, var(--color-muted));
+}
+
+.app-footer a {
+  color: var(--on-backdrop, var(--color-text));
+  opacity: 0.85;
+}
+
+.app-footer a:hover {
+  opacity: 1;
+}
+
+.app-footer span[aria-hidden] {
+  opacity: 0.5;
+}
+
+/* ---------- saved mood thumbnails ---------- */
+.saved-mood-swatch.saved-mood-thumbs {
+  display: flex;
+  width: 58px;
+  height: 34px;
+  flex: none;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+  border-radius: 7px;
+  background: none;
+}
+
+.saved-mood-thumbs span {
+  flex: 1;
+  height: 100%;
+}
