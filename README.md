@@ -80,7 +80,7 @@ All captures are real renders of this repository, taken at 1440×900, 1440×1000
 - **Custom sliders.** Add sliders that drive hue, saturation or lightness, rename them, remove them.
 - **Locks.** Freeze hue, saturation or lightness and move everything else.
 - **Exports.** Copy hex, copy the palette, or download CSS variables, JSON, a Tailwind config or a 1200×630 PNG card.
-- **Shareable links.** The full state lives in the URL hash, so a palette can be sent as a link.
+- **Shareable links.** The full state lives in the URL hash and a Copy link button puts it on the clipboard, so a palette can be sent as a link.
 - **Saved moods and history.** Save, rename, load and delete moods; a 12-entry palette history with restore. Import and export a JSON backup.
 - **Undo and redo.** Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, or the buttons.
 - **Focus mode.** One tap on the screen and the whole display becomes the colour — header, card, swatches, controls, support bar and footer all go. Tap anywhere to bring the interface back for a few seconds, or press Escape to leave.

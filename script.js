@@ -150,18 +150,26 @@
     return touched;
   }
 
+  function hashParams() {
+    const params = new URLSearchParams();
+    params.set('en', String(state.values.energy ?? 50));
+    params.set('ca', String(state.values.calmness ?? 50));
+    params.set('sp', String(state.values.sparkle ?? 50));
+    params.set('model', state.model);
+    params.set('blend', state.blend);
+    params.set('harmony', state.harmony);
+    params.set('bg', state.background);
+    return params;
+  }
+
+  function shareUrl() {
+    return window.location.origin + window.location.pathname + '#' + hashParams().toString();
+  }
+
   function scheduleHash() {
     window.clearTimeout(hashTimer);
     hashTimer = window.setTimeout(() => {
-      const params = new URLSearchParams();
-      params.set('en', String(state.values.energy ?? 50));
-      params.set('ca', String(state.values.calmness ?? 50));
-      params.set('sp', String(state.values.sparkle ?? 50));
-      params.set('model', state.model);
-      params.set('blend', state.blend);
-      params.set('harmony', state.harmony);
-      params.set('bg', state.background);
-      const next = '#' + params.toString();
+      const next = '#' + hashParams().toString();
       if (window.location.hash !== next) {
         window.history.replaceState(null, '', window.location.pathname + window.location.search + next);
       }
@@ -730,25 +738,41 @@
 
   /* ---------- clipboard and export ---------- */
 
-  async function copyText(text, message) {
+  function legacyCopy(text) {
+    const field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    field.style.opacity = '0';
+    document.body.appendChild(field);
+    field.select();
+    let ok = false;
     try {
-      if (navigator.clipboard && window.isSecureContext) {
+      ok = document.execCommand('copy');
+    } catch (error) {
+      ok = false;
+    }
+    field.remove();
+    return ok;
+  }
+
+  async function copyText(text, message) {
+    let copied = false;
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
         await navigator.clipboard.writeText(text);
-      } else {
-        const field = document.createElement('textarea');
-        field.value = text;
-        field.setAttribute('readonly', '');
-        field.style.position = 'fixed';
-        field.style.opacity = '0';
-        document.body.appendChild(field);
-        field.select();
-        document.execCommand('copy');
-        field.remove();
+        copied = true;
+      } catch (error) {
+        copied = false;
       }
+    }
+    if (!copied) copied = legacyCopy(text);
+    if (copied) {
       announce(message || 'Copied to clipboard');
       tick(660);
-    } catch (error) {
-      announce('Copy is unavailable in this browser.');
+    } else {
+      announce('Copy is blocked here \u2014 select the value and copy it manually.');
     }
   }
 
@@ -900,6 +924,19 @@
 
     on('copyPaletteBtn', 'click', () => copyText(C.palette(current, state.harmony).join(', '), 'Four-color palette copied'));
     on('copyHexBtn', 'click', () => copyText(C.toHex(current), `${C.toHex(current)} copied`));
+    on('copyLinkBtn', 'click', async () => {
+      const url = shareUrl();
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: `Mood Mixer \u2014 ${currentVibe}`, url });
+          announce('Link shared');
+          return;
+        } catch (error) {
+          // fall through to clipboard
+        }
+      }
+      copyText(url, 'Link to this palette copied');
+    });
     on('upiCopyBtn', 'click', () => copyText('drsohilboi@ybl', 'UPI ID drsohilboi@ybl copied'));
 
     on('exportCssBtn', 'click', () => download('mood-mixer-palette.css', paletteCss(C.palette(current, state.harmony)), 'text/css'));
