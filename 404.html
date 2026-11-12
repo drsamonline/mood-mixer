@@ -7,17 +7,34 @@
   <title>Page not found — Mood Mixer</title>
   <meta name="robots" content="noindex">
   <meta name="theme-color" content="#6158d9">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/theme.css">
   <style>
+    :root {
+      --bg: #f5f4f1;
+      --surface: #ffffff;
+      --text: #24232b;
+      --muted: #777582;
+      --primary: #6158d9;
+      --border: rgba(36, 35, 43, 0.14);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #11111a;
+        --surface: #242437;
+        --text: #f7f6ff;
+        --muted: #d0cede;
+        --border: rgba(247, 246, 255, 0.2);
+      }
+    }
+
     body {
       display: grid;
       min-height: 100vh;
       margin: 0;
       place-items: center;
-      background: var(--color-bg);
-      color: var(--color-text);
-      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       text-align: center;
       padding: 24px;
     }
@@ -25,14 +42,14 @@
     main {
       max-width: 460px;
       padding: 32px 28px;
-      border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
-      border-radius: var(--radius);
-      background: var(--color-surface);
-      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: var(--surface);
+      box-shadow: 0 18px 60px rgba(26, 24, 40, 0.16);
     }
 
     .mark {
-      color: var(--color-primary);
+      color: var(--primary);
       font-size: 2rem;
     }
 
@@ -43,7 +60,7 @@
 
     p {
       margin: 0 0 18px;
-      color: var(--color-muted);
+      color: var(--muted);
       font-size: 0.9rem;
     }
 
@@ -51,18 +68,22 @@
       display: inline-block;
       margin: 4px;
       padding: 9px 15px;
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-sm);
-      background: var(--color-surface-solid);
-      color: var(--color-text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--text);
       font-weight: 600;
       text-decoration: none;
     }
 
+    a:hover {
+      border-color: var(--primary);
+    }
+
     a.primary {
-      background: var(--color-primary);
-      border-color: var(--color-primary);
-      color: var(--color-primary-contrast);
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
     }
   </style>
 </head>
@@ -72,9 +93,23 @@
     <div class="mark" aria-hidden="true">&#10035;</div>
     <h1>That color does not exist here.</h1>
     <p>The page you asked for is missing. The mixer and the landing page both still work.</p>
-    <a class="primary" href="/">Landing page</a>
-    <a href="/mixer/">Open the mixer</a>
+    <a class="primary" id="homeLink" href="/mood-mixer/">Landing page</a>
+    <a id="mixerLink" href="/mood-mixer/mixer/">Open the mixer</a>
+    <noscript>
+      <p><a href="/mood-mixer/">Landing page</a> <a href="/mood-mixer/mixer/">Open the mixer</a></p>
+    </noscript>
   </main>
+  <script>
+    // A 404 page is served for any path, so resolve the project base from the URL.
+    (function () {
+      var segments = window.location.pathname.split('/').filter(Boolean);
+      var base = segments.length ? '/' + segments[0] + '/' : '/';
+      var home = document.getElementById('homeLink');
+      var mixer = document.getElementById('mixerLink');
+      if (home) home.setAttribute('href', base);
+      if (mixer) mixer.setAttribute('href', base + 'mixer/');
+    })();
+  </script>
 </body>
 
 </html>
