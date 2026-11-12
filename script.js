@@ -73,6 +73,7 @@
     particles: stored.particles !== false,
     audio: Boolean(stored.audio),
     controlsOpen: Boolean(stored.controlsOpen),
+    folderFilter: typeof stored.folderFilter === 'string' ? stored.folderFilter : 'All',
     locks: Object.assign({ hue: false, sat: false, lit: false }, stored.locks || {}),
     lockedValues: Object.assign({ hue: null, sat: null, lit: null }, stored.lockedValues || {})
   };
@@ -371,9 +372,34 @@
       container.appendChild(empty);
       return;
     }
-    state.history.slice(0, MAX_HISTORY).forEach((entry) => {
+    state.history.slice(0, MAX_HISTORY).forEach((entry, index) => {
       const row = document.createElement('div');
       row.className = 'history-item';
+      row.draggable = true;
+      row.dataset.index = String(index);
+      row.title = 'Drag to reorder';
+      row.addEventListener('dragstart', (event) => {
+        event.dataTransfer.setData('text/plain', String(index));
+        event.dataTransfer.effectAllowed = 'move';
+        row.classList.add('is-dragging');
+      });
+      row.addEventListener('dragend', () => row.classList.remove('is-dragging'));
+      row.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        row.classList.add('is-drop-target');
+      });
+      row.addEventListener('dragleave', () => row.classList.remove('is-drop-target'));
+      row.addEventListener('drop', (event) => {
+        event.preventDefault();
+        row.classList.remove('is-drop-target');
+        const from = Number(event.dataTransfer.getData('text/plain'));
+        const to = Number(row.dataset.index);
+        if (!Number.isFinite(from) || !Number.isFinite(to) || from === to) return;
+        const moved = state.history.splice(from, 1)[0];
+        state.history.splice(to, 0, moved);
+        renderHistory();
+        persistNow();
+      });
       const swatches = document.createElement('div');
       swatches.className = 'history-swatches';
       (entry.palette || [entry.hex]).forEach((hex) => {
@@ -407,18 +433,53 @@
     });
   }
 
+  function folderOf(mood) {
+    return (mood && mood.folder ? String(mood.folder) : 'Unfiled');
+  }
+
+  function renderFolderChips() {
+    const chips = byId('folderChips');
+    if (!chips) return;
+    const counts = new Map();
+    state.saved.forEach((mood) => {
+      const key = folderOf(mood);
+      counts.set(key, (counts.get(key) || 0) + 1);
+    });
+    const entries = [['All', state.saved.length]].concat(
+      Array.from(counts.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+    );
+    chips.replaceChildren(...entries.map(([name, count]) => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'folder-chip';
+      chip.textContent = `${name} ${count}`;
+      chip.setAttribute('aria-pressed', String(state.folderFilter === name));
+      if (state.folderFilter === name) chip.classList.add('is-active');
+      chip.addEventListener('click', () => {
+        state.folderFilter = name;
+        renderFolderChips();
+        renderSaved();
+      });
+      return chip;
+    }));
+  }
+
   function renderSaved() {
     const container = byId('savedMoodsContainer');
     if (!container) return;
     container.replaceChildren();
-    if (!state.saved.length) {
+    renderFolderChips();
+    const visible = state.folderFilter === 'All' ?
+      state.saved :
+      state.saved.filter((mood) => folderOf(mood) === state.folderFilter);
+    if (!visible.length) {
       const empty = document.createElement('p');
       empty.className = 'section-hint';
-      empty.textContent = 'No saved moods yet.';
+      empty.textContent = state.saved.length ? 'Nothing in this folder yet.' : 'No saved moods yet.';
       container.appendChild(empty);
       return;
     }
-    state.saved.forEach((mood) => {
+    visible.forEach((mood) => {
       const row = document.createElement('div');
       row.className = 'saved-mood-item';
       const swatch = document.createElement('span');
@@ -431,7 +492,7 @@
       title.textContent = mood.name || 'Saved mood';
       const meta = document.createElement('div');
       meta.className = 'saved-mood-meta';
-      meta.textContent = [mood.vibe || 'Saved color', mood.hex].filter(Boolean).join(' \u00b7 ');
+      meta.textContent = [mood.vibe || 'Saved color', mood.hex, folderOf(mood)].filter(Boolean).join(' \u00b7 ');
       info.append(title, meta);
       const actions = document.createElement('div');
       actions.className = 'saved-mood-actions';
@@ -466,6 +527,19 @@
         persistNow();
       });
 
+      const folder = document.createElement('button');
+      folder.type = 'button';
+      folder.className = 'btn btn-sm';
+      folder.textContent = 'Folder';
+      folder.addEventListener('click', () => {
+        const next = window.prompt('Folder for this mood:', folderOf(mood));
+        if (next === null) return;
+        mood.folder = next.trim() || 'Unfiled';
+        if (state.folderFilter !== 'All' && state.folderFilter !== mood.folder) state.folderFilter = 'All';
+        renderSaved();
+        persistNow();
+      });
+
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'btn btn-sm';
@@ -476,7 +550,7 @@
         persistNow();
       });
 
-      actions.append(load, rename, remove);
+      actions.append(load, rename, folder, remove);
       row.append(swatch, info, actions);
       container.appendChild(row);
     });
@@ -527,6 +601,41 @@
     buildSliders();
     updateMood();
     tick(620);
+  }
+
+  function renderPairs(palette) {
+    const container = byId('pairsContainer');
+    if (!container) return;
+    const list = C.pairs(palette);
+    if (!list.length) {
+      container.replaceChildren();
+      return;
+    }
+    container.replaceChildren(...list.map((pair, index) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'pair-card';
+      button.style.background = pair.bg;
+      button.style.color = pair.fg;
+      button.setAttribute('aria-label',
+        `Pair ${index + 1}: ${pair.fg} text on ${pair.bg}, contrast ${pair.ratio.toFixed(1)} to 1, ${pair.level}. Copy CSS`);
+
+      const sample = document.createElement('span');
+      sample.className = 'pair-sample';
+      sample.textContent = 'Aa';
+      const meta = document.createElement('span');
+      meta.className = 'pair-meta';
+      meta.textContent = `${pair.fg} on ${pair.bg}`;
+      const grade = document.createElement('span');
+      grade.className = 'pair-grade';
+      grade.textContent = `${pair.ratio.toFixed(1)}:1 ${pair.level}`;
+
+      button.append(sample, meta, grade);
+      button.addEventListener('click', () => {
+        copyText(`color: ${pair.fg};\nbackground-color: ${pair.bg};`, `${pair.fg} on ${pair.bg} copied`);
+      });
+      return button;
+    }));
   }
 
   function renderVibes() {
@@ -754,6 +863,7 @@
     });
 
     paintSwatches(palette);
+    renderPairs(palette);
 
     document.querySelectorAll('#slidersContainer input[type="range"], #customSlidersContainer input[type="range"]')
       .forEach((slider) => {
@@ -1012,6 +1122,10 @@
     on('exportTailwindBtn', 'click', () => download('mood-mixer.tailwind.js', paletteTailwind(C.palette(current, state.harmony)), 'text/javascript'));
     on('exportPngBtn', 'click', () => exportPng(C.palette(current, state.harmony)));
     on('copyTextBtn', 'click', () => copyText(paletteText(C.palette(current, state.harmony)), 'Palette copied as text'));
+    on('printBtn', 'click', () => {
+      announce('Print the palette card from the print dialog');
+      window.print();
+    });
 
     const keysDialog = byId('shortcutsDialog');
     const openKeys = () => {
@@ -1104,6 +1218,7 @@
         hex: C.toHex(current),
         vibe: currentVibe,
         values: snapshotValues(),
+        folder: state.folderFilter === 'All' ? 'Unfiled' : state.folderFilter,
         settings: {
           model: state.model,
           blend: state.blend,

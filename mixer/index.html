@@ -221,8 +221,16 @@
             <button id="exportTailwindBtn" class="btn btn-sm" type="button">Tailwind</button>
             <button id="exportPngBtn" class="btn btn-sm" type="button">PNG card</button>
             <button id="copyTextBtn" class="btn btn-sm" type="button">Text list</button>
+            <button id="printBtn" class="btn btn-sm" type="button">Print card</button>
           </div>
           <p class="section-hint">Contrast badges on each swatch show the best text color and its WCAG ratio.</p>
+        </section>
+
+        <section class="panel-section">
+          <div class="panel-header">
+            <h2>Readable pairs</h2><span class="history-note">Tap to copy CSS</span>
+          </div>
+          <div id="pairsContainer" class="pairs-list"></div>
         </section>
 
         <section class="panel-section">
@@ -248,6 +256,7 @@
               <input type="file" id="importFileInput" accept=".json,application/json" hidden>
             </div>
           </div>
+          <div id="folderChips" class="folder-chips" aria-label="Saved mood folders"></div>
           <div id="savedMoodsContainer" class="saved-moods"></div>
         </section>
       </div>

@@ -227,6 +227,46 @@
     };
   }
 
+  /* Readable combinations inside one palette: text on a background, graded. */
+  function pairs(palette) {
+    if (!Array.isArray(palette) || palette.length < 2) return [];
+    const rgb = palette.map((hex) => hexToRgb(hex)).filter(Boolean);
+    if (rgb.length < 2) return [];
+    const out = [];
+    const base = rgb[0];
+    const inkOnBase = bestInk(base);
+    out.push({
+      bg: palette[0],
+      fg: inkOnBase.ink,
+      ratio: inkOnBase.ratio,
+      level: grade(inkOnBase.ratio).level,
+      pass: grade(inkOnBase.ratio).pass
+    });
+    const others = rgb.slice(1).map((color, index) => ({
+      hex: palette[index + 1],
+      ratio: contrastRatio(base, color)
+    })).sort((a, b) => b.ratio - a.ratio);
+    if (others.length) {
+      out.push({
+        bg: palette[0],
+        fg: others[0].hex,
+        ratio: others[0].ratio,
+        level: grade(others[0].ratio).level,
+        pass: grade(others[0].ratio).pass
+      });
+      const second = rgb[1];
+      const inkOnSecond = bestInk(second);
+      out.push({
+        bg: palette[1],
+        fg: inkOnSecond.ink,
+        ratio: inkOnSecond.ratio,
+        level: grade(inkOnSecond.ratio).level,
+        pass: grade(inkOnSecond.ratio).pass
+      });
+    }
+    return out;
+  }
+
   function describe(color) {
     const hex = toHex(color);
     return {
@@ -248,6 +288,7 @@
     bestInk,
     grade,
     palette,
+    pairs,
     generate,
     vibeForHue,
     describe,

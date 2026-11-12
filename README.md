@@ -82,7 +82,9 @@ All captures are real renders of this repository, taken at 1440×900, 1440×1000
 - **Locks.** Freeze hue, saturation or lightness and move everything else.
 - **Exports.** Copy hex, copy the palette, copy it as a text list, or download CSS variables, JSON, a Tailwind config or a 1200×630 PNG card.
 - **Shareable links.** The full state lives in the URL hash and a Copy link button puts it on the clipboard, so a palette can be sent as a link.
-- **Saved moods and history.** Save, rename, load and delete moods; a 12-entry palette history with restore. Import and export a JSON backup.
+- **Readable pairs.** Three text-on-background suggestions from the current palette, each graded, each copying its CSS on click.
+- **Saved moods and history.** Save, rename, move between folders, load and delete moods; filter by folder; a 12-entry palette history you can drag to reorder, with restore. Import and export a JSON backup.
+- **Print card.** One click prints the palette as a clean card — vibe, hex, RGB, HSL and the four colours in a 2×2 grid, nothing else.
 - **Undo and redo.** Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, or the buttons.
 - **Focus mode.** One tap on the screen and the whole display becomes the colour — header, card, swatches, controls, support bar and footer all go. Tap anywhere to bring the interface back for a few seconds, or press Escape to leave.
 - **Randomise from the header.** One button in the header, or `R`, reshuffles every slider; undo puts it back.
