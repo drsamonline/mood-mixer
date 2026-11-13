@@ -6,7 +6,9 @@
 
 A private, offline-ready color playground. Move three sliders, get a coordinated four-color palette, copy hex values, check WCAG contrast, and export what you like. No account, no analytics, no network calls.
 
-[Live demo](https://drsamonline.github.io/mood-mixer/) · [Open the mixer](https://drsamonline.github.io/mood-mixer/mixer/) · [Report a bug](https://github.com/drsamonline/mood-mixer/issues)
+[Live demo](https://drsamonline.github.io/mood-mixer/) · [Open the mixer](https://drsamonline.github.io/mood-mixer/mixer/) · [Report a bug](https://github.com/drsamonline/mood-mixer/issues) · [Changelog](CHANGELOG.md)
+
+**Status: complete.** Version 2.19.1. Every feature listed below is shipped, tested in headless Chrome, lint-clean and deployed. Nothing is marked as planned or partial.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-6158d9.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-2.0.0-6158d9.svg)](https://github.com/drsamonline/mood-mixer/releases)

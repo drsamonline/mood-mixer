@@ -2,6 +2,14 @@
 
 Everything below is one static site: HTML, CSS, vanilla JavaScript. No build step, no framework, no network calls.
 
+## 2.19.1 — 2026-11-13
+
+**Closed out**
+
+- `selftest.html` fetches its nineteen files in parallel instead of one after another; on a slow connection the page used to finish after the reader had given up and read as "files: 0".
+- README carries a status line: complete at 2.19.0, nothing planned or partial.
+- Tag `v2.19.1` marks the release.
+
 ## 2.19.0 — 2026-11-13
 
 **Lighthouse motion removed**

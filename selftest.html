@@ -207,9 +207,9 @@
       const cacheName = cacheKeys.find((key) => key.startsWith('mood-mixer-'));
       const cache = cacheName ? await caches.open(cacheName) : null;
 
-      let ok = 0;
-
-      for (const file of FILES) {
+      /* Fetch in parallel: nineteen sequential round trips made this page look
+       * broken on a slow connection. */
+      const results = await Promise.all(FILES.map(async (file) => {
         const cached = cache ? await cache.match(file) : null;
         let network = null;
         try {
@@ -217,7 +217,12 @@
         } catch (error) {
           network = null;
         }
+        return { file, cached, network };
+      }));
 
+      let ok = 0;
+
+      results.forEach(({ file, cached, network }) => {
         const state = document.createElement('td');
         state.className = 'state';
         const source = document.createElement('td');
@@ -248,7 +253,7 @@
         const tr = document.createElement('tr');
         tr.append(name, source, state);
         rows.appendChild(tr);
-      }
+      });
 
       countState.textContent = 'files: ' + ok + '/' + FILES.length;
     }
