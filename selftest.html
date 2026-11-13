@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline self-test — Mood Mixer</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#6158d9">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <style>
+    :root {
+      --bg: #f5f4f1;
+      --surface: #ffffff;
+      --text: #24232b;
+      --muted: #777582;
+      --primary: #6158d9;
+      --ok: #1c7a37;
+      --bad: #a42350;
+      --border: rgba(36, 35, 43, 0.14);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #11111a;
+        --surface: #242437;
+        --text: #f7f6ff;
+        --muted: #d0cede;
+        --border: rgba(247, 246, 255, 0.2);
+        --ok: #7ee2a0;
+        --bad: #ff9ec1;
+      }
+    }
+
+    body {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      line-height: 1.5;
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 1.5rem;
+    }
+
+    p.lede {
+      margin: 0 0 22px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .pill {
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      font-size: 0.82rem;
+    }
+
+    th,
+    td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 0.7rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    td.state {
+      font-weight: 700;
+    }
+
+    td.state.ok {
+      color: var(--ok);
+    }
+
+    td.state.bad {
+      color: var(--bad);
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 9px 16px;
+      border: 1px solid var(--primary);
+      border-radius: 10px;
+      background: var(--primary);
+      color: #ffffff;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    code {
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 0.78rem;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Offline self-test</h1>
+  <p class="lede">Loads every file the service worker should have cached. Run it once online, then again with the network off — the second run must stay green.</p>
+
+  <div class="summary">
+    <span class="pill" id="swState">service worker: checking</span>
+    <span class="pill" id="netState">network: checking</span>
+    <span class="pill" id="countState">files: 0</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">File</th>
+        <th scope="col">Source</th>
+        <th scope="col">State</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <button id="again" type="button">Run again</button>
+
+  <script>
+    const FILES = [
+      './',
+      './index.html',
+      './404.html',
+      './mixer/',
+      './mixer/index.html',
+      './theme.css?v=2.11.0',
+      './landing.css?v=2.11.0',
+      './style.css?v=2.11.0',
+      './color-core.js?v=2.11.0',
+      './landing.js?v=2.11.0',
+      './script.js?v=2.11.0',
+      './manifest.json?v=2.11.0',
+      './favicon.svg',
+      './icons/icon-192.png',
+      './icons/icon-512.png',
+      './icons/icon-maskable-512.png',
+      './icons/apple-touch-icon.png',
+      './docs/assets/support-portrait.jpg',
+      './docs/assets/upi-qr.svg'
+    ];
+
+    const rows = document.getElementById('rows');
+    const swState = document.getElementById('swState');
+    const netState = document.getElementById('netState');
+    const countState = document.getElementById('countState');
+
+    function paintNetwork() {
+      netState.textContent = 'network: ' + (navigator.onLine ? 'online' : 'offline');
+    }
+
+    async function run() {
+      rows.replaceChildren();
+      paintNetwork();
+
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.getRegistration();
+        const active = registration && registration.active;
+        swState.textContent = 'service worker: ' + (active ? 'active' : 'not registered');
+      } else {
+        swState.textContent = 'service worker: unsupported';
+      }
+
+      const cacheKeys = await caches.keys();
+      const cacheName = cacheKeys.find((key) => key.startsWith('mood-mixer-'));
+      const cache = cacheName ? await caches.open(cacheName) : null;
+
+      let ok = 0;
+
+      for (const file of FILES) {
+        const cached = cache ? await cache.match(file) : null;
+        let network = null;
+        try {
+          network = await fetch(file, { cache: 'no-store' });
+        } catch (error) {
+          network = null;
+        }
+
+        const state = document.createElement('td');
+        state.className = 'state';
+        const source = document.createElement('td');
+        const name = document.createElement('td');
+        const code = document.createElement('code');
+        code.textContent = file;
+        name.appendChild(code);
+
+        const netOk = network && network.ok;
+        if (netOk) {
+          state.textContent = 'OK';
+          state.classList.add('ok');
+          source.textContent = navigator.onLine ?
+            ('network' + (cached ? ' + cache' : '')) :
+            'cache (service worker)';
+          ok += 1;
+        } else if (cached) {
+          state.textContent = 'cached';
+          state.classList.add('ok');
+          source.textContent = 'cache only';
+          ok += 1;
+        } else {
+          state.textContent = 'MISSING';
+          state.classList.add('bad');
+          source.textContent = network ? 'HTTP ' + network.status : 'no network, no cache';
+        }
+
+        const tr = document.createElement('tr');
+        tr.append(name, source, state);
+        rows.appendChild(tr);
+      }
+
+      countState.textContent = 'files: ' + ok + '/' + FILES.length;
+    }
+
+    document.getElementById('again').addEventListener('click', run);
+    window.addEventListener('online', paintNetwork);
+    window.addEventListener('offline', paintNetwork);
+    run();
+  </script>
+</body>
+
+</html>

@@ -1760,3 +1760,34 @@ body.focus-locked {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+/* ---------- restore strip ---------- */
+.restore-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 6px 9px;
+  border: 1px solid color-mix(in srgb, #d6336c 45%, transparent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, #d6336c 10%, transparent);
+}
+
+.restore-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+/* ---------- compare picker ---------- */
+.compare-picker {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+  color: var(--color-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.compare-body {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}

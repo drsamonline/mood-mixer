@@ -503,6 +503,21 @@
     return haystack.toLowerCase().includes(query);
   }
 
+  function showRestore(message) {
+    const bar = byId('restoreBar');
+    if (!bar) return;
+    bar.hidden = false;
+    const label = byId('restoreLabel');
+    if (label) label.textContent = message;
+    announce(message);
+  }
+
+  function renderRestoreBar() {
+    const bar = byId('restoreBar');
+    if (!bar) return;
+    bar.hidden = !deletedBuffer;
+  }
+
   function renderBulkBar() {
     const bar = byId('bulkBar');
     if (!bar) return;
@@ -1442,6 +1457,9 @@
     else if (saveMoodNamedRef) saveMoodNamedRef(name);
   }
 
+  let compareBase = null;
+  let compareSecondId = '';
+
   function compareRows(palette, label) {
     const wrap = document.createElement('div');
     wrap.className = 'compare-column';
@@ -1484,6 +1502,16 @@
     const body = byId('compareBody');
     const heading = byId('compareTitle');
     if (heading) heading.textContent = `${collection.name || 'Palette'} vs the current palette`;
+    compareBase = collection;
+    const selector = byId('compareSecond');
+    if (selector) {
+      const others = state.collections.filter((item) => item.id !== collection.id);
+      selector.replaceChildren(new Option('No second palette', ''));
+      others.forEach((item) => selector.appendChild(new Option(item.name || 'Palette', item.id)));
+      const stillThere = others.some((item) => item.id === compareSecondId);
+      if (!stillThere) compareSecondId = '';
+      selector.value = compareSecondId;
+    }
     if (body) {
       const currentPalette = activePalette();
       const savedPalette = collection.palette || [];
@@ -1491,6 +1519,8 @@
         compareRows(currentPalette, 'Current'),
         compareRows(savedPalette, collection.name || 'Saved')
       );
+      const second = compareSecondId ? state.collections.find((item) => item.id === compareSecondId) : null;
+      if (second) body.appendChild(compareRows(second.palette || [], second.name || 'Palette'));
 
       /* Mark the higher-contrast colour at each position. */
       const lists = body.querySelectorAll('.compare-list');
@@ -2031,6 +2061,18 @@
       collections: state.collections
     }, null, 2), 'application/json'));
 
+    on('restoreDeleteBtn', 'click', () => {
+      if (!deletedBuffer) return;
+      state.saved = deletedBuffer.concat(state.saved).slice(0, MAX_SAVED);
+      const restored = deletedBuffer.length;
+      deletedBuffer = null;
+      window.clearTimeout(deletedTimer);
+      renderSaved();
+      renderRestoreBar();
+      persistNow();
+      announce(`${restored} restored`);
+    });
+
     on('bulkSelectAll', 'click', () => {
       state.saved.forEach((mood) => selection.add(mood.id));
       renderSaved();
@@ -2060,12 +2102,18 @@
     on('bulkDelete', 'click', () => {
       if (!selection.size) return;
       const count = selection.size;
-      if (!window.confirm(`Delete ${count} saved mood${count === 1 ? '' : 's'}? This cannot be undone.`)) return;
+      if (!window.confirm(`Delete ${count} saved mood${count === 1 ? '' : 's'}? You can undo for 20 seconds.`)) return;
+      deletedBuffer = state.saved.filter((mood) => selection.has(mood.id));
       state.saved = state.saved.filter((mood) => !selection.has(mood.id));
       selection.clear();
       renderSaved();
       persistNow();
-      announce(`${count} deleted`);
+      showRestore(`${count} deleted`);
+      window.clearTimeout(deletedTimer);
+      deletedTimer = window.setTimeout(() => {
+        deletedBuffer = null;
+        renderRestoreBar();
+      }, 20000);
     });
 
     on('importBtn', 'click', () => byId('importFileInput')?.click());
@@ -2077,12 +2125,29 @@
         return;
       }
       const { data, moods } = pendingImport;
+      const applySettingsBox = byId('importApplySettings');
+      const withSettings = Boolean(applySettingsBox && applySettingsBox.checked && data.settings);
       pendingImport = null;
       if (dialog) dialog.close();
       applyImport(data, moods);
+      if (withSettings) restoreSettings(data.settings);
     });
 
     on('compareCloseBtn', 'click', () => byId('compareDialog')?.close());
+
+    on('compareSecond', 'change', (event) => {
+      compareSecondId = event.target.value;
+      if (!compareBase) return;
+      const body = byId('compareBody');
+      if (!body) return;
+      const savedPalette = compareBase.palette || [];
+      body.replaceChildren(
+        compareRows(activePalette(), 'Current'),
+        compareRows(savedPalette, compareBase.name || 'Saved')
+      );
+      const second = compareSecondId ? state.collections.find((item) => item.id === compareSecondId) : null;
+      if (second) body.appendChild(compareRows(second.palette || [], second.name || 'Palette'));
+    });
 
     on('nameSaveBtn', 'click', () => {
       const input = byId('nameInput');
@@ -2142,6 +2207,7 @@
               ['Palettes in the file', String(previewCollections.length)],
               ['Moods you already have', String(state.saved.length)]
             ];
+            rows.push(['Settings in the file', data.settings ? 'yes' : 'no']);
             rows.forEach(([label, value]) => {
               const dt = document.createElement('dt');
               dt.textContent = label;
@@ -2149,6 +2215,13 @@
               dd.textContent = value;
               summary.append(dt, dd);
             });
+          }
+          const applySettingsBox = byId('importApplySettings');
+          if (applySettingsBox) {
+            applySettingsBox.checked = Boolean(data.settings);
+            applySettingsBox.disabled = !data.settings;
+            const wrap = byId('importSettingsRow');
+            if (wrap) wrap.hidden = !data.settings;
           }
           pendingImport = { data, moods };
           dialog.showModal();
@@ -2267,6 +2340,8 @@
   let pendingImport = null;
   let query = '';
   const selection = new Set();
+  let deletedBuffer = null;
+  let deletedTimer = 0;
 
   function showInstall(show) {
     const button = byId('installBtn');
@@ -2304,6 +2379,23 @@
       deferredInstall = null;
       showInstall(false);
     });
+  }
+
+  function restoreSettings(settings) {
+    if (!settings || typeof settings !== 'object') return;
+    ['model', 'blend', 'harmony', 'background', 'uiTheme', 'theme', 'contrast'].forEach((key) => {
+      if (typeof settings[key] === 'string') state[key] = settings[key];
+    });
+    if (settings.values && typeof settings.values === 'object') {
+      Object.assign(state.values, settings.values);
+    }
+    if (settings.labels && typeof settings.labels === 'object') state.labels = settings.labels;
+    if (Array.isArray(settings.vibes) && settings.vibes.length) state.vibes = settings.vibes.slice(0, 200);
+    syncSettings();
+    buildSliders();
+    renderVibes();
+    updateMood();
+    announce('Settings restored from the bundle');
   }
 
   function applyImport(data, moods) {
