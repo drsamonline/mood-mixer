@@ -2,6 +2,16 @@
 
 Everything below is one static site: HTML, CSS, vanilla JavaScript. No build step, no framework, no network calls.
 
+## 2.17.0 — 2026-11-13
+
+- The beacon now animates without any script: motion is on by default in CSS and only an explicit `lh-still` opt-out stops it, so a JavaScript failure can no longer leave a dead lighthouse.
+- `body:has(.app-container.focus-mode)` fallback for visibility, in addition to the class the script sets.
+- `Beacon` button beside the hero actions, next to the Settings switch.
+- Under `prefers-reduced-motion` the spatial motion stops but the lamp and glow keep pulsing, so the drawing is never inert.
+- Background is solid by default; short palette links no longer force a gradient. Gradients are opt-in and stay inside one hue (lighter → base → darker of the current colour).
+- One-time migration: a stored save with no `schemaVersion` resets background to solid and switches the beacon on, so a gradient picked up from an old shared link does not stick.
+- `Reset` also returns the background to solid.
+
 ## 2.16.0 — 2026-11-13
 
 - The beacon now rotates a full revolution every 14 s instead of rocking ±13°, so the motion is unmistakable.

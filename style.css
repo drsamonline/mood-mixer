@@ -1863,7 +1863,8 @@ body.focus-locked {
 }
 
 .app-container.focus-mode ~ .lighthouse,
-html.focus-on .lighthouse {
+html.focus-on .lighthouse,
+body:has(.app-container.focus-mode) .lighthouse {
   display: block;
   opacity: 0.9;
 }
@@ -1917,24 +1918,28 @@ html.focus-on .lighthouse {
 }
 
 /* Motion is on by default and switchable; the switch is the last word. */
-html:not(.lh-motion) .lighthouse,
-html:not(.lh-motion) .lighthouse .lh-sweep,
-html:not(.lh-motion) .lighthouse .lh-lamp,
-html:not(.lh-motion) .lighthouse .lh-glow,
-html:not(.lh-motion) .lighthouse .lh-water {
+html.lh-still .lighthouse,
+html.lh-still .lighthouse .lh-sweep,
+html.lh-still .lighthouse .lh-lamp,
+html.lh-still .lighthouse .lh-glow,
+html.lh-still .lighthouse .lh-water {
   animation: none;
 }
 
+/* Reduced motion: drop the spatial movement, keep the light alive. */
 @media (prefers-reduced-motion: reduce) {
-  html.lh-motion .lighthouse .lh-sweep,
-  html.lh-motion .lighthouse .lh-water,
-  html.lh-motion .lighthouse {
-    animation-duration: 30s;
+  html:not(.lh-still) .lighthouse,
+  html:not(.lh-still) .lighthouse .lh-sweep,
+  html:not(.lh-still) .lighthouse .lh-water {
+    animation: none;
   }
 
-  html.lh-motion .lighthouse .lh-lamp,
-  html.lh-motion .lighthouse .lh-glow {
-    animation-duration: 12s;
+  html:not(.lh-still) .lighthouse .lh-lamp {
+    animation: lhPulse 2s ease-in-out infinite;
+  }
+
+  html:not(.lh-still) .lighthouse .lh-glow {
+    animation: lhGlow 3s ease-in-out infinite alternate;
   }
 }
 

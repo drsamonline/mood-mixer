@@ -56,6 +56,7 @@
   }
 
   const stored = readState();
+  const SCHEMA = 2;
   const state = {
     values: Object.assign({ energy: 50, calmness: 50, sparkle: 50 }, stored.values || {}),
     custom: Array.isArray(stored.custom) ? stored.custom : [],
@@ -78,12 +79,20 @@
     drift: Boolean(stored.drift),
     vibe: typeof stored.vibe === 'string' ? stored.vibe : '',
     lastFolder: typeof stored.lastFolder === 'string' ? stored.lastFolder : 'Unfiled',
+    schemaVersion: SCHEMA,
     quiet: Boolean(stored.quiet),
     lighthouseMotion: typeof stored.lighthouseMotion === 'boolean' ? stored.lighthouseMotion : true,
     pinned: Array.isArray(stored.pinned) && stored.pinned.length ? stored.pinned.slice(0, 4) : null,
     locks: Object.assign({ hue: false, sat: false, lit: false }, stored.locks || {}),
     lockedValues: Object.assign({ hue: null, sat: null, lit: null }, stored.lockedValues || {})
   };
+
+  /* Older builds could carry background: gradient from a shared link the user
+   * never picked. Anything without a schema version starts on solid again. */
+  if (!stored.schemaVersion) {
+    state.background = 'solid';
+    state.lighthouseMotion = true;
+  }
 
   let current = { r: 126, g: 200, b: 227, h: 197, s: 64, l: 69 };
   let currentVibe = state.vibes[0] || 'Serene';
@@ -140,7 +149,6 @@
         state.model = decoded.model;
         state.blend = decoded.blend;
         state.harmony = decoded.harmony;
-        state.background = decoded.background;
         touched = true;
       }
     }
@@ -1180,11 +1188,13 @@
     if (quietToggle) quietToggle.checked = state.quiet;
     const lhToggle = byId('lhMotionToggle');
     if (lhToggle) lhToggle.checked = state.lighthouseMotion;
+    const beaconBtn = byId('beaconBtn');
+    if (beaconBtn) beaconBtn.setAttribute('aria-pressed', String(state.lighthouseMotion));
     const pinnedBadge = byId('pinnedBadge');
     if (pinnedBadge) pinnedBadge.hidden = !pinnedPalette;
 
     const root = document.documentElement;
-    root.classList.toggle('lh-motion', state.lighthouseMotion);
+    root.classList.toggle('lh-still', !state.lighthouseMotion);
     if (state.theme === 'dark') root.setAttribute('data-theme', 'dark');
     else root.removeAttribute('data-theme');
     if (state.contrast === 'high') root.setAttribute('data-contrast', 'high');
@@ -1248,9 +1258,13 @@
 
     const backdrop = byId('colorBackdrop');
     if (backdrop) {
-      backdrop.style.background = state.background === 'gradient' ?
-        `linear-gradient(135deg, ${palette[0]}, ${palette[1]})` :
-        palette[0];
+      if (state.background === 'gradient') {
+        const deep = C.toHex(C.hslToRgb(current.h, Math.min(100, current.s + 6), Math.max(14, current.l - 26)));
+        const light = C.toHex(C.hslToRgb(current.h, Math.max(0, current.s - 12), Math.min(96, current.l + 14)));
+        backdrop.style.background = `linear-gradient(150deg, ${light} 0%, ${palette[0]} 46%, ${deep} 100%)`;
+      } else {
+        backdrop.style.background = palette[0];
+      }
     }
 
     if (!vibePinned) currentVibe = C.vibeForHue(current.h);
@@ -2065,6 +2079,8 @@
       state.custom.forEach((slider) => {
         state.values[slider.id] = 50;
       });
+      state.background = 'solid';
+      syncSettings();
       buildSliders();
       updateMood();
       tick(420);
@@ -2479,6 +2495,15 @@
       state.lighthouseMotion = event.target.checked;
       syncSettings();
       schedulePersist();
+      announce(state.lighthouseMotion ? 'Lighthouse beacon on' : 'Lighthouse still');
+    });
+
+    on('beaconBtn', 'click', () => {
+      state.lighthouseMotion = !state.lighthouseMotion;
+      syncSettings();
+      schedulePersist();
+      const button = byId('beaconBtn');
+      if (button) button.setAttribute('aria-pressed', String(state.lighthouseMotion));
       announce(state.lighthouseMotion ? 'Lighthouse beacon on' : 'Lighthouse still');
     });
 
