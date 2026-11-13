@@ -77,6 +77,7 @@
     collections: Array.isArray(stored.collections) ? stored.collections.slice(0, 40) : [],
     drift: Boolean(stored.drift),
     vibe: typeof stored.vibe === 'string' ? stored.vibe : '',
+    lastFolder: typeof stored.lastFolder === 'string' ? stored.lastFolder : 'Unfiled',
     pinned: Array.isArray(stored.pinned) && stored.pinned.length ? stored.pinned.slice(0, 4) : null,
     locks: Object.assign({ hue: false, sat: false, lit: false }, stored.locks || {}),
     lockedValues: Object.assign({ hue: null, sat: null, lit: null }, stored.lockedValues || {})
@@ -487,8 +488,10 @@
       if (state.folderFilter === name) chip.classList.add('is-active');
       chip.addEventListener('click', () => {
         state.folderFilter = name;
+        if (name !== 'All') state.lastFolder = name;
         renderFolderChips();
         renderSaved();
+        schedulePersist();
       });
       return chip;
     }));
@@ -631,6 +634,7 @@
         const next = window.prompt('Folder for this mood:', folderOf(mood));
         if (next === null) return;
         mood.folder = next.trim() || 'Unfiled';
+        state.lastFolder = mood.folder;
         if (state.folderFilter !== 'All' && state.folderFilter !== mood.folder) state.folderFilter = 'All';
         renderSaved();
         persistNow();
@@ -837,6 +841,12 @@
         announce(`${collection.name || 'Palette'} loaded`);
       });
 
+      const compare = document.createElement('button');
+      compare.type = 'button';
+      compare.className = 'btn btn-sm';
+      compare.textContent = 'Compare';
+      compare.addEventListener('click', () => openCompare(collection));
+
       const link = document.createElement('button');
       link.type = 'button';
       link.className = 'btn btn-sm';
@@ -870,7 +880,7 @@
         persistNow();
       });
 
-      actions.append(use, pin, copy, link, remove);
+      actions.append(use, compare, pin, copy, link, remove);
       row.append(main, actions);
       container.appendChild(row);
     });
@@ -1390,6 +1400,57 @@
 </svg>`;
   }
 
+  function compareRows(palette, label) {
+    const wrap = document.createElement('div');
+    wrap.className = 'compare-column';
+
+    const title = document.createElement('h3');
+    title.textContent = label;
+    wrap.appendChild(title);
+
+    const strip = document.createElement('div');
+    strip.className = 'compare-strip';
+    const list = document.createElement('dl');
+    list.className = 'compare-list';
+
+    palette.forEach((hex, index) => {
+      const rgb = C.hexToRgb(hex);
+      const ink = rgb ? C.bestInk(rgb) : null;
+      const grade = ink ? C.grade(ink.ratio) : null;
+
+      const chip = document.createElement('span');
+      chip.style.backgroundColor = hex;
+      strip.appendChild(chip);
+
+      const dt = document.createElement('dt');
+      dt.textContent = `${index + 1}. ${hex}`;
+      const dd = document.createElement('dd');
+      if (ink && grade) {
+        dd.textContent = `${ink.ratio.toFixed(1)}:1 ${grade.level}`;
+        dd.classList.add(grade.pass ? 'is-pass' : 'is-fail');
+      }
+      list.append(dt, dd);
+    });
+
+    wrap.append(strip, list);
+    return wrap;
+  }
+
+  function openCompare(collection) {
+    const dialog = byId('compareDialog');
+    if (!dialog || typeof dialog.showModal !== 'function') return;
+    const body = byId('compareBody');
+    const heading = byId('compareTitle');
+    if (heading) heading.textContent = `${collection.name || 'Palette'} vs the current palette`;
+    if (body) {
+      body.replaceChildren(
+        compareRows(activePalette(), 'Current'),
+        compareRows(collection.palette || [], collection.name || 'Saved')
+      );
+    }
+    dialog.showModal();
+  }
+
   function printHistory() {
     const sheet = byId('printSheet');
     if (!sheet) return;
@@ -1627,6 +1688,24 @@
       schedulePersist();
     });
 
+    let pressTimer = 0;
+    document.addEventListener('pointerdown', (event) => {
+      const appContainer = $('.app-container');
+      if (!appContainer) return;
+      const interactive = event.target.closest('button, a, input, select, textarea, label, [contenteditable="true"], dialog');
+      if (!interactive && !appContainer.classList.contains('focus-mode')) {
+        window.clearTimeout(pressTimer);
+        pressTimer = window.setTimeout(() => {
+          setFocusMode(true);
+          announce('Focus mode \u2014 tap to show the interface, Escape to leave');
+        }, 550);
+      }
+    }, { passive: true });
+
+    ['pointerup', 'pointercancel', 'pointermove'].forEach((type) => {
+      document.addEventListener(type, () => window.clearTimeout(pressTimer), { passive: true });
+    });
+
     document.addEventListener('pointerdown', () => {
       const appContainer = $('.app-container');
       if (!appContainer || !appContainer.classList.contains('focus-mode')) return;
@@ -1826,7 +1905,7 @@
         palette: C.palette(current, state.harmony),
         vibe: currentVibe,
         values: snapshotValues(),
-        folder: state.folderFilter === 'All' ? 'Unfiled' : state.folderFilter,
+        folder: state.folderFilter === 'All' ? (state.lastFolder || 'Unfiled') : state.folderFilter,
         settings: {
           model: state.model,
           blend: state.blend,
@@ -1873,6 +1952,7 @@
       state.saved.forEach((mood) => {
         if (selection.has(mood.id)) mood.folder = folder;
       });
+      state.lastFolder = folder;
       selection.clear();
       state.folderFilter = 'All';
       renderSaved();
@@ -1904,6 +1984,8 @@
       if (dialog) dialog.close();
       applyImport(data, moods);
     });
+
+    on('compareCloseBtn', 'click', () => byId('compareDialog')?.close());
 
     on('importCancelBtn', 'click', () => {
       pendingImport = null;
@@ -2137,6 +2219,19 @@
     announce(`${clean.length} mood${clean.length === 1 ? '' : 's'}, ${cleanCollections.length} palette${cleanCollections.length === 1 ? '' : 's'} imported`);
   }
 
+  function bindNetwork() {
+    const badge = byId('netBadge');
+    if (!badge) return;
+    const paint = () => {
+      const offline = navigator.onLine === false;
+      badge.hidden = !offline;
+      if (offline) badge.textContent = 'Offline \u00b7 still working';
+    };
+    window.addEventListener('online', paint);
+    window.addEventListener('offline', paint);
+    paint();
+  }
+
   function init() {
     const fromHash = readHash();
     if (!pinnedPalette && state.pinned) pinnedPalette = state.pinned.slice();
@@ -2152,6 +2247,7 @@
     updateUndoButtons();
     bindEvents();
     bindInstall();
+    bindNetwork();
     particles.init();
     if (state.drift) startDrift();
     updateMood();

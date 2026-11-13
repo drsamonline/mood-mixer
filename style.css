@@ -1630,3 +1630,87 @@ body.focus-locked {
     letter-spacing: 0.01em;
   }
 }
+
+/* ---------- offline badge ---------- */
+.net-badge {
+  margin-right: auto;
+  margin-left: 10px;
+  padding: 3px 9px;
+  border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+  color: var(--color-muted);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+/* ---------- compare dialog ---------- */
+.compare-dialog {
+  max-width: 520px;
+  width: min(92vw, 520px);
+}
+
+.compare-body {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 18px;
+}
+
+.compare-column h3 {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compare-strip {
+  display: flex;
+  height: 30px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  border: 1px solid color-mix(in srgb, var(--color-text) 14%, transparent);
+  border-radius: 6px;
+}
+
+.compare-strip span {
+  flex: 1;
+}
+
+.compare-list {
+  display: grid;
+  margin: 0;
+  gap: 3px 8px;
+  grid-template-columns: 1fr auto;
+  font-size: 0.66rem;
+}
+
+.compare-list dt {
+  font-family: ui-monospace, Menlo, monospace;
+  color: var(--color-text);
+}
+
+.compare-list dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.compare-list dd.is-pass {
+  color: #1c7a37;
+}
+
+.compare-list dd.is-fail {
+  color: #a42350;
+}
+
+[data-theme="dark"] .compare-list dd.is-pass {
+  color: #7ee2a0;
+}
+
+[data-theme="dark"] .compare-list dd.is-fail {
+  color: #ff9ec1;
+}

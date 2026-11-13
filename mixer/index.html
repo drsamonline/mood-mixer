@@ -10,15 +10,15 @@
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-  <link rel="manifest" href="../manifest.json?v=2.8.0">
+  <link rel="manifest" href="../manifest.json?v=2.9.0">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Mood Mixer — live color playground">
   <meta property="og:description" content="Sliders in, palettes out. Copy hex, check contrast, export CSS, JSON, Tailwind or PNG.">
   <meta property="og:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
-  <link rel="stylesheet" href="../theme.css?v=2.8.0">
-  <link rel="stylesheet" href="../style.css?v=2.8.0">
+  <link rel="stylesheet" href="../theme.css?v=2.9.0">
+  <link rel="stylesheet" href="../style.css?v=2.9.0">
 </head>
 
 <body>
@@ -32,6 +32,7 @@
         <span class="brand-mark" aria-hidden="true">&#10035;</span>
         <span class="app-title">Mood Mixer</span>
       </a>
+      <span id="netBadge" class="net-badge" hidden>Offline &middot; still working</span>
       <div class="header-controls">
         <button id="installBtn" class="btn btn-icon btn-install" type="button" hidden aria-label="Install Mood Mixer" title="Install app">
           <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" focusable="false">
@@ -347,6 +348,14 @@
 
   <section id="printSheet" class="print-sheet" aria-hidden="true"></section>
 
+  <dialog id="compareDialog" class="keys-dialog compare-dialog" aria-labelledby="compareTitle">
+    <h2 id="compareTitle">Compare</h2>
+    <div id="compareBody" class="compare-body"></div>
+    <div class="dialog-actions">
+      <button id="compareCloseBtn" class="btn btn-sm" type="button">Close</button>
+    </div>
+  </dialog>
+
   <dialog id="importDialog" class="keys-dialog" aria-labelledby="importTitle">
     <h2 id="importTitle">Merge this backup?</h2>
     <dl id="importSummary"></dl>
@@ -374,8 +383,8 @@
     </form>
   </dialog>
 
-  <script src="../color-core.js?v=2.8.0"></script>
-  <script src="../script.js?v=2.8.0"></script>
+  <script src="../color-core.js?v=2.9.0"></script>
+  <script src="../script.js?v=2.9.0"></script>
 </body>
 
 </html>
