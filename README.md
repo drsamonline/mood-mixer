@@ -83,15 +83,15 @@ All captures are real renders of this repository, taken at 1440×900, 1440×1000
 - **Exports.** Copy hex, copy the palette, copy it as a text list, or download CSS variables, JSON, a Tailwind config or a 1200×630 PNG card.
 - **Shareable links.** The whole state packs into a six-character code — `#p=1in8hx` — carried in the URL hash; a Copy link button puts the full link on the clipboard. Longer query-style links from earlier versions still open.
 - **Vision check.** The current palette shown as deuteranopia, protanopia and tritanopia see it, beside normal vision.
-- **Seed from a photo.** A `From photo` button in the hero reads the dominant colour of a dropped image and moves the sliders to match, without opening the panel.
+- **Seed from a photo or the clipboard.** A `From photo` button reads the dominant colour of an image and moves the sliders to match; pasting an image anywhere does the same, without opening the panel.
 - **From an image.** Drop a photo or pick a file: five dominant colours are read in the browser, copyable one by one, or matched back to the sliders. Nothing is uploaded.
 - **Collections.** Save the four colours as a named palette, restore it with every setting, pin it, copy it, share it as a link, delete it. Collections travel in the JSON backup.
 - **Pinned palettes.** A collection can be pinned, and a pinned palette travels as `#q=7ec8e3-4a90d9-1f2c3d-ffffff` — the exact four colours, not a re-derivation. Moving a slider releases the pin.
 - **SVG sheet.** A printable, self-contained SVG with every colour's hex, RGB, HSL and contrast against white and black — or the same sheet rasterised to a 2× PNG for posting.
-- **Palette compare.** Put a saved palette beside the current one — or two beside it — colour by colour, with contrast grades and a ▲ on whichever colour wins at each position; the comparison saves as an SVG.
+- **Palette compare.** Put a saved mood or palette beside the current one — or two beside it — colour by colour, with contrast grades and a ▲ on whichever colour wins at each position; the comparison saves as an SVG.
 - **Naming that suggests.** Saving opens a small dialog pre-filled with `<vibe> · <harmony>`, plus two alternatives built from the nearest colour name.
 - **Quiet mode.** One switch stops every status announcement — for screen recording or a still screen.
-- **Folder rename.** With a folder selected, `Rename folder` rewrites every mood filed there in one step.
+- **Folder rename and export.** With a folder selected, `Rename folder` rewrites every mood filed there, and `Export folder` downloads just that folder as JSON.
 - **Folder memory.** Saves land in the folder you last used, so filing needs no extra prompt.
 - **Long press for focus.** Hold anywhere that is not a control for half a second and the screen becomes the colour.
 - **Offline badge.** A quiet pill appears only when the network drops: "Offline · still working".
@@ -107,7 +107,7 @@ All captures are real renders of this repository, taken at 1440×900, 1440×1000
 - **Offline self-test.** `selftest.html` loads every precached file and reports what came from the network and what came from the cache; run it online, then with the network off.
 - **Print card.** One click prints the palette as a clean card — vibe, hex, RGB, HSL and the four colours in a 2×2 grid, nothing else.
 - **Undo and redo.** Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, or the buttons.
-- **Focus mode.** One tap on the screen and the whole display becomes the colour — header, card, swatches, controls, support bar and footer all go. Tap anywhere to bring the interface back for a few seconds, or press Escape to leave.
+- **Focus mode.** A hex caption fades in for a moment when the screen turns to colour, then leaves. One tap on the screen and the whole display becomes the colour — header, card, swatches, controls, support bar and footer all go. Tap anywhere to bring the interface back for a few seconds, or press Escape to leave.
 - **Randomise from the header.** One button in the header, or `R`, reshuffles every slider; undo puts it back.
 - **Four UI themes, dark mode, high contrast.** Modern, minimalist, retro and neon, each with its own type and colour tokens.
 - **Sound and particles.** Optional WebAudio ticks, and an ambient particle layer that follows the sparkle slider.

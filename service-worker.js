@@ -4,7 +4,7 @@
  */
 const CACHE_VERSION = 'v11';
 const CACHE_NAME = `mood-mixer-${CACHE_VERSION}`;
-const ASSET_VERSION = '2.12.0';
+const ASSET_VERSION = '2.13.0';
 
 const PRECACHE = [
   './',

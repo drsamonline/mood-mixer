@@ -474,6 +474,8 @@
     if (!chips) return;
     const rename = byId('renameFolderBtn');
     if (rename) rename.hidden = state.folderFilter === 'All';
+    const exportFolder = byId('exportFolderBtn');
+    if (exportFolder) exportFolder.hidden = state.folderFilter === 'All';
     const counts = new Map();
     state.saved.forEach((mood) => {
       const key = folderOf(mood);
@@ -658,6 +660,16 @@
         persistNow();
       });
 
+      const compare = document.createElement('button');
+      compare.type = 'button';
+      compare.className = 'btn btn-sm';
+      compare.textContent = 'Compare';
+      compare.addEventListener('click', () => openCompare({
+        id: mood.id,
+        name: mood.name || 'Saved mood',
+        palette: Array.isArray(mood.palette) && mood.palette.length ? mood.palette : [mood.hex]
+      }));
+
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'btn btn-sm';
@@ -668,7 +680,7 @@
         persistNow();
       });
 
-      actions.append(load, rename, note, folder, remove);
+      actions.append(load, compare, rename, note, folder, remove);
       row.append(pick, swatch, info, actions);
       container.appendChild(row);
     });
@@ -1258,6 +1270,7 @@
     const backdropInk = C.bestInk(C.hexToRgb(palette[0]) || current);
     document.documentElement.style.setProperty('--on-backdrop', backdropInk.ink);
     document.documentElement.setAttribute('data-backdrop-ink', backdropInk.on);
+    if (document.querySelector('.app-container.focus-mode')) flashFocusCaption();
 
     document.querySelectorAll('#slidersContainer input[type="range"], #customSlidersContainer input[type="range"]')
       .forEach((slider) => {
@@ -1501,7 +1514,12 @@
     return wrap;
   }
 
-  function openCompare(collection) {
+  function openCompare(source) {
+    const collection = {
+      id: source.id || '',
+      name: source.name || 'Palette',
+      palette: source.palette || (source.hex ? [source.hex] : [])
+    };
     const dialog = byId('compareDialog');
     if (!dialog || typeof dialog.showModal !== 'function') return;
     const body = byId('compareBody');
@@ -1751,6 +1769,15 @@
 
   /* ---------- focus mode ---------- */
 
+  function flashFocusCaption() {
+    const caption = byId('focusCaption');
+    if (!caption) return;
+    caption.textContent = `${C.toHex(current)} \u00b7 ${currentVibe}`;
+    caption.classList.add('is-on');
+    window.clearTimeout(flashFocusCaption.timer);
+    flashFocusCaption.timer = window.setTimeout(() => caption.classList.remove('is-on'), 1400);
+  }
+
   function setFocusMode(active) {
     const appContainer = $('.app-container');
     const button = byId('focusModeBtn');
@@ -1765,6 +1792,7 @@
       button.textContent = active ? '\u2715 Exit focus view' : '\u26f6 Focus on color';
     }
     window.clearTimeout(hudHideTimer);
+    if (active) flashFocusCaption();
   }
 
   function toggleFocusMode() {
@@ -1864,6 +1892,7 @@
       if (!appContainer || !appContainer.classList.contains('focus-mode')) return;
       appContainer.classList.add('hud-visible');
       window.clearTimeout(hudHideTimer);
+    if (active) flashFocusCaption();
       hudHideTimer = window.setTimeout(() => appContainer.classList.remove('hud-visible'), 3500);
     });
 
@@ -1873,10 +1902,25 @@
     on('copyHexBtn', 'click', () => copyText(C.toHex(current), `${C.toHex(current)} copied`));
     on('seedPhotoBtn', 'click', () => byId('seedPhotoInput')?.click());
 
+    document.addEventListener('paste', (event) => {
+      const items = event.clipboardData ? Array.from(event.clipboardData.items) : [];
+      const imageItem = items.find((item) => item.type && item.type.startsWith('image/'));
+      if (!imageItem) return;
+      const file = imageItem.getAsFile();
+      if (!file) return;
+      event.preventDefault();
+      seedFromFile(file);
+    });
+
     on('seedPhotoInput', 'change', (event) => {
       const file = event.target.files?.[0];
       event.target.value = '';
-      if (!file) return;
+      if (file) seedFromFile(file);
+    });
+  }
+
+  function seedFromFile(file) {
+    {
       const url = URL.createObjectURL(file);
       const image = new Image();
       image.onload = () => {
@@ -1913,8 +1957,10 @@
         announce('That file is not an image the browser can read');
       };
       image.src = url;
-    });
+    }
+  }
 
+  function bindHeroExtras() {
     on('copyLinkBtn', 'click', async () => {
       const url = shareUrl();
       if (navigator.share) {
@@ -2145,6 +2191,28 @@
       moods: state.saved,
       collections: state.collections
     }, null, 2), 'application/json'));
+
+    on('exportFolderBtn', 'click', () => {
+      if (state.folderFilter === 'All') {
+        announce('Pick a folder first');
+        return;
+      }
+      const folder = state.folderFilter;
+      const moods = state.saved.filter((mood) => folderOf(mood) === folder);
+      if (!moods.length) {
+        announce('That folder is empty');
+        return;
+      }
+      const payload = {
+        app: 'Mood Mixer',
+        kind: 'folder',
+        folder,
+        exported: new Date().toISOString(),
+        moods
+      };
+      download(`mood-mixer-${folder.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.json`, JSON.stringify(payload, null, 2), 'application/json');
+      announce(`${moods.length} mood${moods.length === 1 ? '' : 's'} exported`);
+    });
 
     on('renameFolderBtn', 'click', () => {
       if (state.folderFilter === 'All') {
@@ -2573,6 +2641,7 @@
     renderHistory();
     updateUndoButtons();
     bindEvents();
+    bindHeroExtras();
     bindInstall();
     bindNetwork();
     particles.init();
