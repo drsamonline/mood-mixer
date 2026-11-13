@@ -2,6 +2,14 @@
 
 Everything below is one static site: HTML, CSS, vanilla JavaScript. No build step, no framework, no network calls.
 
+## 2.16.0 — 2026-11-13
+
+- The beacon now rotates a full revolution every 14 s instead of rocking ±13°, so the motion is unmistakable.
+- `transform-box: view-box` on the animated groups: without it the rotation origin resolved against the bounding box and the sweep barely moved.
+- Fixed an initialisation-order bug: the motion class was applied before its `root` reference existed, which threw and left every animation off.
+- `Lighthouse beacon` switch in Settings, persisted; under `prefers-reduced-motion` the same motion runs at a quarter speed rather than stopping dead.
+- Verified by sampling computed transforms 900 ms apart: the rotation matrix advances (0° → 28° → 54°) and six animations are live.
+
 ## 2.15.0 — 2026-11-13
 
 **Visual polish**

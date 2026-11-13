@@ -1869,8 +1869,9 @@ html.focus-on .lighthouse {
 }
 
 .lighthouse .lh-sweep {
+  transform-box: view-box;
   transform-origin: 200px 84px;
-  animation: lhSweep 7s ease-in-out infinite alternate;
+  animation: lhBeacon 14s linear infinite;
 }
 
 .lighthouse .lh-lamp {
@@ -1881,35 +1882,59 @@ html.focus-on .lighthouse {
   animation: lhGlow 5s ease-in-out infinite alternate;
 }
 
-@keyframes lhGlow {
-  from { opacity: 0.12; }
-  to { opacity: 0.3; }
-}
-
 .lighthouse .lh-water {
+  transform-box: view-box;
   animation: lhDrift 9s ease-in-out infinite alternate;
 }
 
-@keyframes lhSweep {
-  from { transform: rotate(-13deg); }
-  to { transform: rotate(13deg); }
+.lighthouse {
+  animation: lhFloat 6s ease-in-out infinite alternate;
+}
+
+@keyframes lhBeacon {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @keyframes lhPulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.45; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes lhGlow {
+  from { opacity: 0.1; }
+  to { opacity: 0.34; }
 }
 
 @keyframes lhDrift {
-  from { transform: translateX(-6px); }
-  to { transform: translateX(6px); }
+  from { transform: translateX(-7px); }
+  to { transform: translateX(7px); }
+}
+
+@keyframes lhFloat {
+  from { transform: translateY(0); }
+  to { transform: translateY(-6px); }
+}
+
+/* Motion is on by default and switchable; the switch is the last word. */
+html:not(.lh-motion) .lighthouse,
+html:not(.lh-motion) .lighthouse .lh-sweep,
+html:not(.lh-motion) .lighthouse .lh-lamp,
+html:not(.lh-motion) .lighthouse .lh-glow,
+html:not(.lh-motion) .lighthouse .lh-water {
+  animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lighthouse .lh-sweep,
-  .lighthouse .lh-lamp,
-  .lighthouse .lh-water {
-    animation: none;
+  html.lh-motion .lighthouse .lh-sweep,
+  html.lh-motion .lighthouse .lh-water,
+  html.lh-motion .lighthouse {
+    animation-duration: 30s;
+  }
+
+  html.lh-motion .lighthouse .lh-lamp,
+  html.lh-motion .lighthouse .lh-glow {
+    animation-duration: 12s;
   }
 }
 

@@ -79,6 +79,7 @@
     vibe: typeof stored.vibe === 'string' ? stored.vibe : '',
     lastFolder: typeof stored.lastFolder === 'string' ? stored.lastFolder : 'Unfiled',
     quiet: Boolean(stored.quiet),
+    lighthouseMotion: typeof stored.lighthouseMotion === 'boolean' ? stored.lighthouseMotion : true,
     pinned: Array.isArray(stored.pinned) && stored.pinned.length ? stored.pinned.slice(0, 4) : null,
     locks: Object.assign({ hue: false, sat: false, lit: false }, stored.locks || {}),
     lockedValues: Object.assign({ hue: null, sat: null, lit: null }, stored.lockedValues || {})
@@ -1177,10 +1178,13 @@
     if (driftToggle) driftToggle.checked = state.drift;
     const quietToggle = byId('quietToggle');
     if (quietToggle) quietToggle.checked = state.quiet;
+    const lhToggle = byId('lhMotionToggle');
+    if (lhToggle) lhToggle.checked = state.lighthouseMotion;
     const pinnedBadge = byId('pinnedBadge');
     if (pinnedBadge) pinnedBadge.hidden = !pinnedPalette;
 
     const root = document.documentElement;
+    root.classList.toggle('lh-motion', state.lighthouseMotion);
     if (state.theme === 'dark') root.setAttribute('data-theme', 'dark');
     else root.removeAttribute('data-theme');
     if (state.contrast === 'high') root.setAttribute('data-contrast', 'high');
@@ -2469,6 +2473,13 @@
       state.audio = event.target.checked;
       if (state.audio) tick(660);
       schedulePersist();
+    });
+
+    on('lhMotionToggle', 'change', (event) => {
+      state.lighthouseMotion = event.target.checked;
+      syncSettings();
+      schedulePersist();
+      announce(state.lighthouseMotion ? 'Lighthouse beacon on' : 'Lighthouse still');
     });
 
     on('quietToggle', 'change', (event) => {
