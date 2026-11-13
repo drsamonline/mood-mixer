@@ -10,15 +10,15 @@
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-  <link rel="manifest" href="../manifest.json?v=2.5.0">
+  <link rel="manifest" href="../manifest.json?v=2.6.0">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Mood Mixer — live color playground">
   <meta property="og:description" content="Sliders in, palettes out. Copy hex, check contrast, export CSS, JSON, Tailwind or PNG.">
   <meta property="og:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
-  <link rel="stylesheet" href="../theme.css?v=2.5.0">
-  <link rel="stylesheet" href="../style.css?v=2.5.0">
+  <link rel="stylesheet" href="../theme.css?v=2.6.0">
+  <link rel="stylesheet" href="../style.css?v=2.6.0">
 </head>
 
 <body>
@@ -232,6 +232,7 @@
             <button id="copyTextBtn" class="btn btn-sm" type="button">Text list</button>
             <button id="printBtn" class="btn btn-sm" type="button">Print card</button>
             <button id="exportSheetBtn" class="btn btn-sm" type="button">SVG sheet</button>
+            <button id="exportSheetPngBtn" class="btn btn-sm" type="button">Sheet PNG</button>
           </div>
           <p class="section-hint">Contrast badges on each swatch show the best text color and its WCAG ratio.</p>
         </section>
@@ -328,6 +329,16 @@
     </footer>
   </div>
 
+  <dialog id="importDialog" class="keys-dialog" aria-labelledby="importTitle">
+    <h2 id="importTitle">Merge this backup?</h2>
+    <dl id="importSummary"></dl>
+    <p class="dialog-note">Nothing is overwritten. Moods and palettes you already have stay where they are.</p>
+    <div class="dialog-actions">
+      <button id="importCancelBtn" class="btn btn-sm" type="button">Cancel</button>
+      <button id="importConfirmBtn" class="btn btn-sm btn-primary" type="button">Merge</button>
+    </div>
+  </dialog>
+
   <dialog id="shortcutsDialog" class="keys-dialog" aria-labelledby="keysTitle">
     <h2 id="keysTitle">Keyboard</h2>
     <dl>
@@ -345,8 +356,8 @@
     </form>
   </dialog>
 
-  <script src="../color-core.js?v=2.5.0"></script>
-  <script src="../script.js?v=2.5.0"></script>
+  <script src="../color-core.js?v=2.6.0"></script>
+  <script src="../script.js?v=2.6.0"></script>
 </body>
 
 </html>

@@ -526,6 +526,19 @@
       const meta = document.createElement('div');
       meta.className = 'saved-mood-meta';
       meta.textContent = [mood.vibe || 'Saved color', mood.hex, folderOf(mood)].filter(Boolean).join(' \u00b7 ');
+
+      const moodRgb = C.hexToRgb(mood.hex || '');
+      const moodInk = moodRgb ? C.bestInk(moodRgb) : null;
+      const moodGrade = moodInk ? C.grade(moodInk.ratio) : null;
+      if (moodInk && moodGrade) {
+        const pill = document.createElement('span');
+        pill.className = `saved-grade ${moodGrade.pass ? 'is-pass' : 'is-fail'}`;
+        pill.textContent = `${moodInk.ratio.toFixed(1)}:1 ${moodGrade.level}`;
+        pill.title = moodGrade.pass ?
+          `Text on this colour passes ${moodGrade.level}` :
+          'Text on this colour is below AA — pick a lighter or darker shade for labels';
+        meta.appendChild(pill);
+      }
       info.append(title, meta);
       const actions = document.createElement('div');
       actions.className = 'saved-mood-actions';
@@ -1294,6 +1307,44 @@
 </svg>`;
   }
 
+  function exportSheetPng(palette) {
+    const svg = paletteSheet(palette);
+    const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const image = new Image();
+    image.onload = () => {
+      const scale = 2;
+      const canvas = document.createElement('canvas');
+      canvas.width = image.width * scale;
+      canvas.height = image.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(scale, scale);
+      ctx.fillStyle = '#f5f4f1';
+      ctx.fillRect(0, 0, image.width, image.height);
+      ctx.drawImage(image, 0, 0);
+      URL.revokeObjectURL(url);
+      canvas.toBlob((png) => {
+        if (!png) {
+          announce('The sheet could not be rendered');
+          return;
+        }
+        const pngUrl = URL.createObjectURL(png);
+        const link = document.createElement('a');
+        link.href = pngUrl;
+        link.download = 'mood-mixer-sheet.png';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(pngUrl), 1500);
+      }, 'image/png');
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      announce('The sheet could not be rendered');
+    };
+    image.src = url;
+  }
+
   function exportPng(palette) {
     const width = 1200;
     const height = 630;
@@ -1377,6 +1428,12 @@
     }, 4000);
   }
 
+  function autoName() {
+    const harmony = (HARMONY_LABELS[state.harmony] || state.harmony || '').toLowerCase();
+    const vibe = String(currentVibe || 'Mood').replace(/\s+/g, ' ').trim();
+    return `${vibe} \u00b7 ${harmony}`;
+  }
+
   function randomize() {
     commitUndo();
     [...DEFAULTS, ...state.custom].forEach((slider) => {
@@ -1440,6 +1497,7 @@
     on('exportTailwindBtn', 'click', () => download('mood-mixer.tailwind.js', paletteTailwind(activePalette()), 'text/javascript'));
     on('exportPngBtn', 'click', () => exportPng(activePalette()));
     on('exportSheetBtn', 'click', () => download('mood-mixer-sheet.svg', paletteSheet(activePalette()), 'image/svg+xml'));
+    on('exportSheetPngBtn', 'click', () => exportSheetPng(activePalette()));
     on('copyTextBtn', 'click', () => copyText(paletteText(activePalette()), 'Palette copied as text'));
     on('printBtn', 'click', () => {
       announce('Print the palette card from the print dialog');
@@ -1497,7 +1555,7 @@
     on('randomizeHeader', 'click', randomize);
 
     on('saveCollectionBtn', 'click', () => {
-      const name = window.prompt('Name this palette:', `${currentVibe} palette`);
+      const name = window.prompt('Name this palette:', autoName());
       if (!name || !name.trim()) return;
       state.collections.unshift({
         id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
@@ -1585,7 +1643,7 @@
     });
 
     on('saveMoodBtn', 'click', () => {
-      const name = window.prompt('Name this mood:', `${currentVibe} Mood`);
+      const name = window.prompt('Name this mood:', autoName());
       if (!name || !name.trim()) return;
       state.saved.unshift({
         id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
@@ -1605,7 +1663,13 @@
       state.saved = state.saved.slice(0, MAX_SAVED);
       renderSaved();
       persistNow();
-      announce('Mood saved');
+      const savedRgb = C.hexToRgb(C.toHex(current));
+      const savedInk = savedRgb ? C.bestInk(savedRgb) : null;
+      if (savedInk && !C.grade(savedInk.ratio).pass) {
+        announce(`Mood saved \u2014 text on it is only ${savedInk.ratio.toFixed(1)}:1, below AA`);
+      } else {
+        announce('Mood saved');
+      }
       tick(760);
     });
 
@@ -1618,6 +1682,25 @@
     }, null, 2), 'application/json'));
 
     on('importBtn', 'click', () => byId('importFileInput')?.click());
+
+    on('importConfirmBtn', 'click', () => {
+      const dialog = byId('importDialog');
+      if (!pendingImport) {
+        if (dialog) dialog.close();
+        return;
+      }
+      const { data, moods } = pendingImport;
+      pendingImport = null;
+      if (dialog) dialog.close();
+      applyImport(data, moods);
+    });
+
+    on('importCancelBtn', 'click', () => {
+      pendingImport = null;
+      const dialog = byId('importDialog');
+      if (dialog) dialog.close();
+      announce('Import cancelled');
+    });
 
     on('importFileInput', 'change', (event) => {
       const file = event.target.files?.[0];
@@ -1641,36 +1724,34 @@
           event.target.value = '';
           return;
         }
-        const known = new Set(state.saved.map((item) => item.id));
-        const clean = moods
-          .filter((item) => item && typeof item === 'object' && typeof item.hex === 'string')
-          .map((item) => ({
-            id: typeof item.id === 'string' ? item.id : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-            name: String(item.name || 'Imported mood').slice(0, 80),
-            hex: item.hex.slice(0, 9),
-            vibe: String(item.vibe || '').slice(0, 60),
-            values: item.values && typeof item.values === 'object' ? item.values : {},
-            settings: item.settings && typeof item.settings === 'object' ? item.settings : {}
-          }))
-          .filter((item) => !known.has(item.id));
-        state.saved = clean.concat(state.saved).slice(0, MAX_SAVED);
-
-        const collections = Array.isArray(data.collections) ? data.collections : [];
-        const cleanCollections = collections
-          .filter((item) => item && typeof item === 'object' && Array.isArray(item.palette))
-          .map((item) => ({
-            id: typeof item.id === 'string' ? item.id : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-            name: String(item.name || 'Palette').slice(0, 80),
-            palette: item.palette.slice(0, 4).map((hex) => String(hex).slice(0, 9)),
-            values: item.values && typeof item.values === 'object' ? item.values : {},
-            settings: item.settings && typeof item.settings === 'object' ? item.settings : {}
-          }));
-        state.collections = cleanCollections.concat(state.collections).slice(0, 40);
-
-        renderSaved();
-        renderCollections();
-        persistNow();
-        announce(`${clean.length} mood${clean.length === 1 ? '' : 's'}, ${cleanCollections.length} palette${cleanCollections.length === 1 ? '' : 's'} imported`);
+        const previewCollections = Array.isArray(data.collections) ? data.collections : [];
+        const knownIds = new Set(state.saved.map((item) => item.id));
+        const newMoods = moods.filter((item) => item && typeof item.id === 'string' && !knownIds.has(item.id)).length;
+        const dialog = byId('importDialog');
+        if (dialog && typeof dialog.showModal === 'function') {
+          const summary = byId('importSummary');
+          if (summary) {
+            summary.replaceChildren();
+            const rows = [
+              ['Moods in the file', String(moods.length)],
+              ['New after merging', String(newMoods)],
+              ['Palettes in the file', String(previewCollections.length)],
+              ['Moods you already have', String(state.saved.length)]
+            ];
+            rows.forEach(([label, value]) => {
+              const dt = document.createElement('dt');
+              dt.textContent = label;
+              const dd = document.createElement('dd');
+              dd.textContent = value;
+              summary.append(dt, dd);
+            });
+          }
+          pendingImport = { data, moods };
+          dialog.showModal();
+          event.target.value = '';
+          return;
+        }
+        applyImport(data, moods);
         event.target.value = '';
       };
       reader.readAsText(file);
@@ -1770,6 +1851,7 @@
   }
 
   let deferredInstall = null;
+  let pendingImport = null;
 
   function showInstall(show) {
     const button = byId('installBtn');
@@ -1807,6 +1889,39 @@
       deferredInstall = null;
       showInstall(false);
     });
+  }
+
+  function applyImport(data, moods) {
+    const known = new Set(state.saved.map((item) => item.id));
+    const clean = moods
+          .filter((item) => item && typeof item === 'object' && typeof item.hex === 'string')
+          .map((item) => ({
+            id: typeof item.id === 'string' ? item.id : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+            name: String(item.name || 'Imported mood').slice(0, 80),
+            hex: item.hex.slice(0, 9),
+            vibe: String(item.vibe || '').slice(0, 60),
+            values: item.values && typeof item.values === 'object' ? item.values : {},
+            settings: item.settings && typeof item.settings === 'object' ? item.settings : {}
+          }))
+          .filter((item) => !known.has(item.id));
+    state.saved = clean.concat(state.saved).slice(0, MAX_SAVED);
+
+    const collections = Array.isArray(data.collections) ? data.collections : [];
+    const cleanCollections = collections
+          .filter((item) => item && typeof item === 'object' && Array.isArray(item.palette))
+          .map((item) => ({
+            id: typeof item.id === 'string' ? item.id : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+            name: String(item.name || 'Palette').slice(0, 80),
+            palette: item.palette.slice(0, 4).map((hex) => String(hex).slice(0, 9)),
+            values: item.values && typeof item.values === 'object' ? item.values : {},
+            settings: item.settings && typeof item.settings === 'object' ? item.settings : {}
+          }));
+    state.collections = cleanCollections.concat(state.collections).slice(0, 40);
+
+    renderSaved();
+    renderCollections();
+    persistNow();
+    announce(`${clean.length} mood${clean.length === 1 ? '' : 's'}, ${cleanCollections.length} palette${cleanCollections.length === 1 ? '' : 's'} imported`);
   }
 
   function init() {

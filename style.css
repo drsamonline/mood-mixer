@@ -1440,3 +1440,53 @@ body.focus-locked {
   letter-spacing: 0.02em;
   text-align: center;
 }
+
+/* ---------- contrast grade pill on saved moods ---------- */
+.saved-grade {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+}
+
+.saved-grade.is-pass {
+  background: color-mix(in srgb, #2ea44f 16%, transparent);
+  color: #1c7a37;
+}
+
+.saved-grade.is-fail {
+  background: color-mix(in srgb, #d6336c 16%, transparent);
+  color: #a42350;
+}
+
+[data-theme="dark"] .saved-grade.is-pass {
+  color: #7ee2a0;
+}
+
+[data-theme="dark"] .saved-grade.is-fail {
+  color: #ff9ec1;
+}
+
+/* ---------- dialog extras ---------- */
+.dialog-note {
+  margin: 0 0 16px;
+  color: var(--color-muted);
+  font-size: 0.74rem;
+  line-height: 1.45;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn-primary {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+}

@@ -86,9 +86,10 @@ All captures are real renders of this repository, taken at 1440×900, 1440×1000
 - **From an image.** Drop a photo or pick a file: five dominant colours are read in the browser, copyable one by one, or matched back to the sliders. Nothing is uploaded.
 - **Collections.** Save the four colours as a named palette, restore it with every setting, pin it, copy it, share it as a link, delete it. Collections travel in the JSON backup.
 - **Pinned palettes.** A collection can be pinned, and a pinned palette travels as `#q=7ec8e3-4a90d9-1f2c3d-ffffff` — the exact four colours, not a re-derivation. Moving a slider releases the pin.
-- **SVG sheet.** A printable, self-contained SVG with every colour's hex, RGB, HSL and contrast against white and black.
+- **SVG sheet.** A printable, self-contained SVG with every colour's hex, RGB, HSL and contrast against white and black — or the same sheet rasterised to a 2× PNG for posting.
+- **Contrast grade on every saved mood.** Each row shows the ratio and AA/AAA grade of the text colour that colour can carry.
 - **Readable pairs.** Three text-on-background suggestions from the current palette, each graded, each copying its CSS on click.
-- **Saved moods and history.** Save, rename, move between folders, load and delete moods; each mood shows its four colours as a thumbnail; filter by folder; a 12-entry palette history you can drag to reorder — with an Undo reorder button — and restore. Import and export a JSON backup.
+- **Saved moods and history.** Names are suggested for you (`Serene · tetrad`); save, rename, move between folders, load and delete moods; each mood shows its four colours as a thumbnail; filter by folder; a 12-entry palette history you can drag to reorder — with an Undo reorder button — and restore. Import and export a JSON backup — an import shows what is in the file and how many moods are new before anything is merged.
 - **Print card.** One click prints the palette as a clean card — vibe, hex, RGB, HSL and the four colours in a 2×2 grid, nothing else.
 - **Undo and redo.** Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, or the buttons.
 - **Focus mode.** One tap on the screen and the whole display becomes the colour — header, card, swatches, controls, support bar and footer all go. Tap anywhere to bring the interface back for a few seconds, or press Escape to leave.
