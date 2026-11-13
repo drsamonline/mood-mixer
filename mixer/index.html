@@ -10,15 +10,15 @@
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-  <link rel="manifest" href="../manifest.json?v=2.6.0">
+  <link rel="manifest" href="../manifest.json?v=2.7.0">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Mood Mixer — live color playground">
   <meta property="og:description" content="Sliders in, palettes out. Copy hex, check contrast, export CSS, JSON, Tailwind or PNG.">
   <meta property="og:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
-  <link rel="stylesheet" href="../theme.css?v=2.6.0">
-  <link rel="stylesheet" href="../style.css?v=2.6.0">
+  <link rel="stylesheet" href="../theme.css?v=2.7.0">
+  <link rel="stylesheet" href="../style.css?v=2.7.0">
 </head>
 
 <body>
@@ -281,7 +281,10 @@
         <section class="panel-section">
           <div class="panel-header">
             <h2>Palette History</h2>
-            <button id="undoReorderBtn" class="btn btn-sm" type="button" hidden>Undo reorder</button>
+            <div class="panel-actions">
+              <button id="historySheetBtn" class="btn btn-sm" type="button">Sheet</button>
+              <button id="undoReorderBtn" class="btn btn-sm" type="button" hidden>Undo reorder</button>
+            </div>
           </div>
           <div id="colorHistoryContainer" class="color-history"></div>
         </section>
@@ -295,6 +298,10 @@
               <input type="file" id="importFileInput" accept=".json,application/json" hidden>
             </div>
           </div>
+          <label class="search-row">
+            <span class="visually-hidden">Search saved moods and palettes</span>
+            <input type="search" id="searchInput" class="search-input" placeholder="Search name, vibe, hex or note" autocomplete="off">
+          </label>
           <div id="folderChips" class="folder-chips" aria-label="Saved mood folders"></div>
           <div id="savedMoodsContainer" class="saved-moods"></div>
         </section>
@@ -356,8 +363,8 @@
     </form>
   </dialog>
 
-  <script src="../color-core.js?v=2.6.0"></script>
-  <script src="../script.js?v=2.6.0"></script>
+  <script src="../color-core.js?v=2.7.0"></script>
+  <script src="../script.js?v=2.7.0"></script>
 </body>
 
 </html>

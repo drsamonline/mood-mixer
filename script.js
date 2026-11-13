@@ -490,18 +490,25 @@
     }));
   }
 
+  function matchesQuery(haystack) {
+    if (!query) return true;
+    return haystack.toLowerCase().includes(query);
+  }
+
   function renderSaved() {
     const container = byId('savedMoodsContainer');
     if (!container) return;
     container.replaceChildren();
     renderFolderChips();
-    const visible = state.folderFilter === 'All' ?
-      state.saved :
-      state.saved.filter((mood) => folderOf(mood) === state.folderFilter);
+    const visible = state.saved
+      .filter((mood) => state.folderFilter === 'All' || folderOf(mood) === state.folderFilter)
+      .filter((mood) => matchesQuery([
+        mood.name, mood.vibe, mood.hex, mood.note, folderOf(mood)
+      ].filter(Boolean).join(' ')));
     if (!visible.length) {
       const empty = document.createElement('p');
       empty.className = 'section-hint';
-      empty.textContent = state.saved.length ? 'Nothing in this folder yet.' : 'No saved moods yet.';
+      empty.textContent = state.saved.length ? 'Nothing matches here.' : 'No saved moods yet.';
       container.appendChild(empty);
       return;
     }
@@ -540,6 +547,12 @@
         meta.appendChild(pill);
       }
       info.append(title, meta);
+      if (mood.note) {
+        const note = document.createElement('div');
+        note.className = 'saved-note';
+        note.textContent = mood.note;
+        info.appendChild(note);
+      }
       const actions = document.createElement('div');
       actions.className = 'saved-mood-actions';
 
@@ -573,6 +586,18 @@
         persistNow();
       });
 
+      const note = document.createElement('button');
+      note.type = 'button';
+      note.className = 'btn btn-sm';
+      note.textContent = 'Note';
+      note.addEventListener('click', () => {
+        const next = window.prompt('Note for this mood:', mood.note || '');
+        if (next === null) return;
+        mood.note = next.trim().slice(0, 200);
+        renderSaved();
+        persistNow();
+      });
+
       const folder = document.createElement('button');
       folder.type = 'button';
       folder.className = 'btn btn-sm';
@@ -596,7 +621,7 @@
         persistNow();
       });
 
-      actions.append(load, rename, folder, remove);
+      actions.append(load, rename, note, folder, remove);
       row.append(swatch, info, actions);
       container.appendChild(row);
     });
@@ -734,7 +759,16 @@
       container.appendChild(empty);
       return;
     }
-    state.collections.forEach((collection) => {
+    const visibleCollections = state.collections.filter((collection) =>
+      matchesQuery([collection.name, (collection.palette || []).join(' ')].filter(Boolean).join(' ')));
+    if (!visibleCollections.length) {
+      const empty = document.createElement('p');
+      empty.className = 'section-hint';
+      empty.textContent = 'Nothing matches this search.';
+      container.appendChild(empty);
+      return;
+    }
+    visibleCollections.forEach((collection) => {
       const row = document.createElement('div');
       row.className = 'collection-row';
 
@@ -984,7 +1018,24 @@
     };
 
     input.addEventListener('pointerdown', begin);
-    input.addEventListener('keydown', begin);
+    input.addEventListener('keydown', (event) => {
+      begin();
+      const step = event.shiftKey ? 10 : 1;
+      let delta = 0;
+      if (event.key === 'ArrowRight' || event.key === 'ArrowUp') delta = step;
+      else if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') delta = -step;
+      else if (event.key === 'PageUp') delta = 10;
+      else if (event.key === 'PageDown') delta = -10;
+      else return;
+      event.preventDefault();
+      const next = C.clamp(Number(input.value) + delta, 0, 100);
+      input.value = String(next);
+      state.values[slider.id] = next;
+      output.textContent = String(next);
+      input.setAttribute('aria-valuetext', sliderAriaText(label.textContent, next));
+      updateMood();
+      announce(`${label.textContent}: ${next} percent`);
+    });
     input.addEventListener('input', () => {
       begin();
       if (pinnedPalette) {
@@ -1307,6 +1358,40 @@
 </svg>`;
   }
 
+  function historySheet() {
+    const entries = state.history.slice(0, MAX_HISTORY);
+    if (!entries.length) {
+      announce('No history to export yet');
+      return null;
+    }
+    const width = 900;
+    const rowHeight = 76;
+    const height = 96 + entries.length * rowHeight + 44;
+    const rows = entries.map((entry, index) => {
+      const palette = entry.palette && entry.palette.length ? entry.palette : [entry.hex];
+      const y = 88 + index * rowHeight;
+      const chips = palette.map((hex, chipIndex) => {
+        const x = 300 + chipIndex * 132;
+        return `<rect x="${x}" y="${y}" width="124" height="52" rx="8" fill="${hex}" stroke="#e2e0da"/>
+      <text x="${x}" y="${y + 68}" font-family="system-ui, sans-serif" font-size="11" fill="#777582">${hex}</text>`;
+      }).join('\n      ');
+      return `<g>
+      <text x="48" y="${y + 20}" font-family="system-ui, sans-serif" font-size="15" font-weight="600" fill="#24232b">${index + 1}. ${entry.vibe || 'Color'}</text>
+      <text x="48" y="${y + 40}" font-family="system-ui, sans-serif" font-size="12" fill="#777582">${entry.hex}</text>
+      ${chips}
+    </g>`;
+    }).join('\n    ');
+
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Mood Mixer palette history">
+  <rect width="${width}" height="${height}" fill="#f5f4f1"/>
+  <text x="48" y="46" font-family="system-ui, sans-serif" font-size="22" font-weight="700" fill="#24232b">Mood Mixer — recent palettes</text>
+  <text x="48" y="68" font-family="system-ui, sans-serif" font-size="13" fill="#777582">${entries.length} entries · ${new Date().toISOString().slice(0, 10)}</text>
+  ${rows}
+  <text x="48" y="${height - 18}" font-family="system-ui, sans-serif" font-size="12" fill="#777582">Mood Mixer · drsamonline.github.io/mood-mixer</text>
+</svg>`;
+  }
+
   function exportSheetPng(palette) {
     const svg = paletteSheet(palette);
     const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
@@ -1498,6 +1583,16 @@
     on('exportPngBtn', 'click', () => exportPng(activePalette()));
     on('exportSheetBtn', 'click', () => download('mood-mixer-sheet.svg', paletteSheet(activePalette()), 'image/svg+xml'));
     on('exportSheetPngBtn', 'click', () => exportSheetPng(activePalette()));
+    on('historySheetBtn', 'click', () => {
+      const svg = historySheet();
+      if (svg) download('mood-mixer-history.svg', svg, 'image/svg+xml');
+    });
+
+    on('searchInput', 'input', (event) => {
+      query = event.target.value.trim().toLowerCase();
+      renderSaved();
+      renderCollections();
+    });
     on('copyTextBtn', 'click', () => copyText(paletteText(activePalette()), 'Palette copied as text'));
     on('printBtn', 'click', () => {
       announce('Print the palette card from the print dialog');
@@ -1852,6 +1947,7 @@
 
   let deferredInstall = null;
   let pendingImport = null;
+  let query = '';
 
   function showInstall(show) {
     const button = byId('installBtn');
@@ -1900,6 +1996,7 @@
             name: String(item.name || 'Imported mood').slice(0, 80),
             hex: item.hex.slice(0, 9),
             vibe: String(item.vibe || '').slice(0, 60),
+            note: String(item.note || '').slice(0, 200),
             values: item.values && typeof item.values === 'object' ? item.values : {},
             settings: item.settings && typeof item.settings === 'object' ? item.settings : {}
           }))
