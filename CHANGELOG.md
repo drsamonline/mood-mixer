@@ -1,0 +1,116 @@
+# Changelog
+
+Everything below is one static site: HTML, CSS, vanilla JavaScript. No build step, no framework, no network calls.
+
+## 2.14.0 — 2026-11-13
+
+**Hardening**
+
+- Lint is real: ESLint (no-undef as error), html-validate on all four pages, stylelint on all stylesheets. Configs are committed (`.htmlvalidate.json`, `stylelint.config.js`).
+- `tools/check-links.mjs` verifies every local `href`/`src`, every precached file and every manifest icon.
+- CI at `.github/workflows/check.yml` runs links, JS, HTML, CSS and manifest validation on every push.
+- Fixed a real defect found by ESLint: a stray `if (active)` inside the focus-mode HUD timer threw on every tap while in focus.
+- ARIA fixes: `role="group"` on the labelled containers so `aria-label` is legal.
+- This changelog.
+
+## 2.13.0
+
+- Paste an image anywhere to seed the sliders from its dominant colour.
+- `Export folder` downloads one folder as JSON.
+- Saved moods gained `Compare`; the dialog takes any palette.
+- Focus mode shows a hex caption for 1.4 s on entry and on colour change.
+
+## 2.12.0
+
+- `From photo` in the hero seeds the sliders without opening the panel.
+- `Rename folder` rewrites every mood in the active folder.
+- Comparison saves as an SVG sheet.
+- Footer links to the offline self-test; the page reads the asset version from the mixer so its list cannot drift.
+
+## 2.11.0
+
+- Import can apply a bundle's settings, with a switch in the preview.
+- Compare takes an optional second palette: three columns.
+- Deleting saved moods leaves an Undo strip for twenty seconds.
+- `selftest.html` loads all 19 precached files and labels each network or cache.
+
+## 2.10.0
+
+- Compare marks the higher-contrast colour at each position.
+- Naming dialog with three suggestions replaces the prompt.
+- Quiet mode suppresses announcements.
+- Export is one bundle: settings, moods, collections, version.
+
+## 2.9.0
+
+- Palette compare, colour by colour, with both grades.
+- Saves land in the last used folder.
+- Half-second press on non-controls enters focus mode.
+- Offline pill appears only when the network drops.
+
+## 2.8.0
+
+- Bulk select, move and delete for saved moods.
+- Nearest CSS colour name under the current hex.
+- Pinned palette, vibe word and panel state survive a reload.
+- Recent palettes print as an A4 sheet.
+
+## 2.7.0
+
+- One note per saved mood; search across name, vibe, hex, folder and note.
+- Focused sliders step 1 point, 10 with Shift, announced politely.
+- Twelve recent palettes export as one SVG contact sheet.
+
+## 2.6.0
+
+- Sheet PNG: the SVG sheet rasterised at 2×.
+- Saved moods show their text-contrast grade.
+- Import previews counts before merging.
+- Names pre-filled as `<vibe> · <harmony>`.
+
+## 2.5.0
+
+- SVG sheet with hex, RGB, HSL and contrast per colour.
+- Pinned palette links (`#q=…`) restore exact colours.
+- Slow drift option in focus mode.
+- Typography via `local()` `@font-face` — no webfont request.
+
+## 2.4.0
+
+- Colour-vision simulation rows.
+- Image eyedropper: five dominant colours, local.
+- Collections: named palettes with settings, carried in the backup.
+- Undo reorder for palette history.
+
+## 2.3.0
+
+- Six-character palette codes (`#p=…`) replace the long query hash.
+- Backdrop-aware text: near-black or white by contrast.
+- Saved-mood thumbnails.
+- Install button when the browser offers one.
+
+## 2.2.0
+
+- Focus mode hides every surface at once; the screen becomes the colour.
+- Randomise button in the header.
+- Copy link, with a clipboard fallback.
+
+## 2.1.0
+
+- Offline hardening: service worker v11, network-first, 19-file precache.
+- `?v=` asset versioning so a stale cache cannot win.
+- Presets, text export, keyboard dialog.
+
+## 2.0.0
+
+- Shared colour engine (`color-core.js`): HSL, RGB, HSV, six harmony schemes, WCAG grading.
+- Contrast badges per swatch; readable pairs.
+- Exports: CSS, JSON, Tailwind, PNG card.
+- Undo/redo, keyboard shortcuts, URL state.
+- Landing page with a working demo; sponsor block on both pages.
+- Installable PWA with relative paths, icons, `404.html`, `robots.txt`, `sitemap.xml`.
+- MIT licence.
+
+## 1.0.0 — initial
+
+Landing page, mixer, sliders, palettes, local saving.

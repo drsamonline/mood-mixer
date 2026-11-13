@@ -1,0 +1,32 @@
+name: Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Local references
+        run: node tools/check-links.mjs
+
+      - name: JavaScript
+        run: npx --yes eslint@8 --no-eslintrc --env browser,es2022 --parser-options=ecmaVersion:2022 --rule '{"no-unused-vars":"warn","no-undef":"error"}' color-core.js landing.js script.js service-worker.js
+
+      - name: HTML
+        run: npx --yes html-validate@8 "*.html" "mixer/*.html"
+
+      - name: CSS
+        run: npx --yes stylelint@16 "*.css"
+
+      - name: Manifest is valid JSON
+        run: node -e "JSON.parse(require('fs').readFileSync('manifest.json','utf8')); console.log('manifest ok')"

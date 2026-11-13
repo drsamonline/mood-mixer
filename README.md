@@ -178,8 +178,19 @@ Bump `ASSET_VERSION` in `service-worker.js` and the `?v=` query on the CSS/JS li
 ## Checks
 
 ```bash
-npm run check     # JS, HTML and CSS lint
+npm run check     # local references, then JS, HTML and CSS lint
 ```
+
+What `npm run check` does:
+
+| Step | Tool | Fails on |
+|---|---|---|
+| `check:links` | `tools/check-links.mjs` | a local `href`/`src`, a precached file or a manifest icon that does not exist |
+| `lint:js` | ESLint 8 | undefined variables (error), unused ones (warning) |
+| `lint:html` | html-validate | ARIA misuse, invalid nesting, duplicate ids |
+| `lint:css` | stylelint | invalid hex, unknown properties, duplicate declarations in a block |
+
+CI runs the same four steps on every push — see `.github/workflows/check.yml`. History of the project is in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

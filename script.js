@@ -1237,7 +1237,6 @@
   function updateMood() {
     current = C.generate(state);
     const palette = activePalette();
-    const hex = palette[0];
 
     const backdrop = byId('colorBackdrop');
     if (backdrop) {
@@ -1892,7 +1891,6 @@
       if (!appContainer || !appContainer.classList.contains('focus-mode')) return;
       appContainer.classList.add('hud-visible');
       window.clearTimeout(hudHideTimer);
-    if (active) flashFocusCaption();
       hudHideTimer = window.setTimeout(() => appContainer.classList.remove('hud-visible'), 3500);
     });
 
@@ -2072,7 +2070,6 @@
       announce('Palette saved to collections');
     };
 
-    const imageInput = byId('imageInput');
     const dropZone = byId('imageDrop');
     if (dropZone) {
       ['dragenter', 'dragover'].forEach((type) => {

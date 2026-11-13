@@ -20,8 +20,8 @@
   <meta name="twitter:title" content="Mood Mixer — find the color for right now">
   <meta name="twitter:description" content="A private, offline-ready color playground. Sliders in, palettes out.">
   <meta name="twitter:image" content="https://drsamonline.github.io/mood-mixer/screenshots/landing.png">
-  <link rel="stylesheet" href="theme.css?v=2.13.0">
-  <link rel="stylesheet" href="landing.css?v=2.13.0">
+  <link rel="stylesheet" href="theme.css?v=2.14.0">
+  <link rel="stylesheet" href="landing.css?v=2.14.0">
 </head>
 
 <body>
@@ -58,12 +58,12 @@
           <div class="orbit orbit-one"></div>
           <div class="orbit orbit-two"></div>
 
-          <div class="mood-card" id="heroCard" aria-label="Live demo: drag the sliders to change the color mood">
+          <div class="mood-card" id="heroCard" role="group" aria-label="Live demo: drag the sliders to change the color mood">
             <div class="card-topline"><span>YOUR COLOR MOOD</span><span class="live-indicator">&#9679; LIVE</span></div>
             <div class="color-orb" id="heroOrb" aria-hidden="true"><span>&#10022;</span></div>
             <p class="mood-name">A little more <strong id="heroVibe">Serene</strong></p>
             <p class="mood-hex"><span id="heroHex">#7ec8e3</span> <span aria-hidden="true">&middot;</span> <span id="heroRgb">126, 200, 227</span></p>
-            <div class="palette-row" aria-label="Four-color palette">
+            <div class="palette-row" role="group" aria-label="Four-color palette">
               <span class="palette-chip chip-one"></span>
               <span class="palette-chip chip-two"></span>
               <span class="palette-chip chip-three"></span>
@@ -198,8 +198,8 @@
     </footer>
   </div>
 
-  <script src="color-core.js?v=2.13.0"></script>
-  <script src="landing.js?v=2.13.0"></script>
+  <script src="color-core.js?v=2.14.0"></script>
+  <script src="landing.js?v=2.14.0"></script>
 </body>
 
 </html>

@@ -10,15 +10,15 @@
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-  <link rel="manifest" href="../manifest.json?v=2.13.0">
+  <link rel="manifest" href="../manifest.json?v=2.14.0">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Mood Mixer — live color playground">
   <meta property="og:description" content="Sliders in, palettes out. Copy hex, check contrast, export CSS, JSON, Tailwind or PNG.">
   <meta property="og:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
-  <link rel="stylesheet" href="../theme.css?v=2.13.0">
-  <link rel="stylesheet" href="../style.css?v=2.13.0">
+  <link rel="stylesheet" href="../theme.css?v=2.14.0">
+  <link rel="stylesheet" href="../style.css?v=2.14.0">
 </head>
 
 <body>
@@ -106,7 +106,7 @@
       </div>
 
       <p class="pinned-badge" id="pinnedBadge" hidden>Pinned palette &middot; move a slider to release</p>
-      <div class="hero-swatches" id="heroSwatches" aria-label="Four-color palette">
+      <div class="hero-swatches" id="heroSwatches" role="group" aria-label="Four-color palette">
         <button class="hero-swatch hero-swatch-main" id="mainSwatch" type="button" title="Base color">
           <span class="swatch-hex">#7ec8e3</span>
           <span class="swatch-contrast">4.2:1</span>
@@ -322,7 +322,7 @@
             <button id="bulkDelete" class="btn btn-sm" type="button">Delete</button>
           </div>
           <div class="folder-row">
-            <div id="folderChips" class="folder-chips" aria-label="Saved mood folders"></div>
+            <div id="folderChips" class="folder-chips" role="group" aria-label="Saved mood folders"></div>
             <button id="renameFolderBtn" class="btn btn-sm" type="button" hidden title="Rename the active folder">Rename folder</button>
             <button id="exportFolderBtn" class="btn btn-sm" type="button" hidden title="Export the active folder as JSON">Export folder</button>
           </div>
@@ -414,8 +414,8 @@
     </form>
   </dialog>
 
-  <script src="../color-core.js?v=2.13.0"></script>
-  <script src="../script.js?v=2.13.0"></script>
+  <script src="../color-core.js?v=2.14.0"></script>
+  <script src="../script.js?v=2.14.0"></script>
 </body>
 
 </html>
