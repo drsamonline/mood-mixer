@@ -83,13 +83,15 @@ All captures are real renders of this repository, taken at 1440×900, 1440×1000
 - **Exports.** Copy hex, copy the palette, copy it as a text list, or download CSS variables, JSON, a Tailwind config or a 1200×630 PNG card.
 - **Shareable links.** The whole state packs into a six-character code — `#p=1in8hx` — carried in the URL hash; a Copy link button puts the full link on the clipboard. Longer query-style links from earlier versions still open.
 - **Vision check.** The current palette shown as deuteranopia, protanopia and tritanopia see it, beside normal vision.
+- **Seed from a photo.** A `From photo` button in the hero reads the dominant colour of a dropped image and moves the sliders to match, without opening the panel.
 - **From an image.** Drop a photo or pick a file: five dominant colours are read in the browser, copyable one by one, or matched back to the sliders. Nothing is uploaded.
 - **Collections.** Save the four colours as a named palette, restore it with every setting, pin it, copy it, share it as a link, delete it. Collections travel in the JSON backup.
 - **Pinned palettes.** A collection can be pinned, and a pinned palette travels as `#q=7ec8e3-4a90d9-1f2c3d-ffffff` — the exact four colours, not a re-derivation. Moving a slider releases the pin.
 - **SVG sheet.** A printable, self-contained SVG with every colour's hex, RGB, HSL and contrast against white and black — or the same sheet rasterised to a 2× PNG for posting.
-- **Palette compare.** Put a saved palette beside the current one — or two beside it — colour by colour, with contrast grades and a ▲ on whichever colour wins at each position.
+- **Palette compare.** Put a saved palette beside the current one — or two beside it — colour by colour, with contrast grades and a ▲ on whichever colour wins at each position; the comparison saves as an SVG.
 - **Naming that suggests.** Saving opens a small dialog pre-filled with `<vibe> · <harmony>`, plus two alternatives built from the nearest colour name.
 - **Quiet mode.** One switch stops every status announcement — for screen recording or a still screen.
+- **Folder rename.** With a folder selected, `Rename folder` rewrites every mood filed there in one step.
 - **Folder memory.** Saves land in the folder you last used, so filing needs no extra prompt.
 - **Long press for focus.** Hold anywhere that is not a control for half a second and the screen becomes the colour.
 - **Offline badge.** A quiet pill appears only when the network drops: "Offline · still working".

@@ -10,15 +10,15 @@
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-  <link rel="manifest" href="../manifest.json?v=2.11.0">
+  <link rel="manifest" href="../manifest.json?v=2.12.0">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Mood Mixer — live color playground">
   <meta property="og:description" content="Sliders in, palettes out. Copy hex, check contrast, export CSS, JSON, Tailwind or PNG.">
   <meta property="og:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
-  <link rel="stylesheet" href="../theme.css?v=2.11.0">
-  <link rel="stylesheet" href="../style.css?v=2.11.0">
+  <link rel="stylesheet" href="../theme.css?v=2.12.0">
+  <link rel="stylesheet" href="../style.css?v=2.12.0">
 </head>
 
 <body>
@@ -90,6 +90,8 @@
           <button id="copyPaletteBtn" class="focus-mode-btn" type="button">Copy palette</button>
           <button id="copyHexBtn" class="focus-mode-btn" type="button">Copy hex</button>
           <button id="copyLinkBtn" class="focus-mode-btn" type="button" title="Copy a link to this exact palette">Copy link</button>
+          <button id="seedPhotoBtn" class="focus-mode-btn" type="button" title="Start from a photo">From photo</button>
+          <input type="file" id="seedPhotoInput" accept="image/*" hidden>
           <button id="exportCssBtn" class="focus-mode-btn" type="button">Export CSS</button>
         </div>
 
@@ -317,7 +319,10 @@
             <button id="bulkMove" class="btn btn-sm" type="button">Move</button>
             <button id="bulkDelete" class="btn btn-sm" type="button">Delete</button>
           </div>
-          <div id="folderChips" class="folder-chips" aria-label="Saved mood folders"></div>
+          <div class="folder-row">
+            <div id="folderChips" class="folder-chips" aria-label="Saved mood folders"></div>
+            <button id="renameFolderBtn" class="btn btn-sm" type="button" hidden title="Rename the active folder">Rename folder</button>
+          </div>
           <div id="savedMoodsContainer" class="saved-moods"></div>
         </section>
       </div>
@@ -347,6 +352,8 @@
       <span aria-hidden="true">&middot;</span>
       <a href="https://github.com/drsamonline/mood-mixer/blob/main/LICENSE">MIT</a>
       <span aria-hidden="true">&middot;</span>
+      <a href="../selftest.html">Offline self-test</a>
+      <span aria-hidden="true">&middot;</span>
       <span>Everything stays in your browser.</span>
     </footer>
   </div>
@@ -371,6 +378,7 @@
     </label>
     <div id="compareBody" class="compare-body"></div>
     <div class="dialog-actions">
+      <button id="compareSaveBtn" class="btn btn-sm" type="button">Save SVG</button>
       <button id="compareCloseBtn" class="btn btn-sm" type="button">Close</button>
     </div>
   </dialog>
@@ -403,8 +411,8 @@
     </form>
   </dialog>
 
-  <script src="../color-core.js?v=2.11.0"></script>
-  <script src="../script.js?v=2.11.0"></script>
+  <script src="../color-core.js?v=2.12.0"></script>
+  <script src="../script.js?v=2.12.0"></script>
 </body>
 
 </html>

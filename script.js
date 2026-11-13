@@ -472,6 +472,8 @@
   function renderFolderChips() {
     const chips = byId('folderChips');
     if (!chips) return;
+    const rename = byId('renameFolderBtn');
+    if (rename) rename.hidden = state.folderFilter === 'All';
     const counts = new Map();
     state.saved.forEach((mood) => {
       const key = folderOf(mood);
@@ -904,6 +906,20 @@
 
   /* ---------- image palette ---------- */
 
+  function matchSlidersTo(hex) {
+    const rgb = C.hexToRgb(hex);
+    if (!rgb) return false;
+    const hsl = C.rgbToHsl(rgb.r, rgb.g, rgb.b);
+    commitUndo();
+    state.values.energy = Math.round(C.clamp((hsl.h - (hsl.s * 0.5) / 3.6) / 3.6, 0, 100));
+    state.values.sparkle = Math.round(C.clamp((hsl.s - 40) / 0.6, 0, 100));
+    state.values.calmness = Math.round(C.clamp((hsl.l - 20) / 0.7, 0, 100));
+    vibePinned = false;
+    buildSliders();
+    updateMood();
+    return true;
+  }
+
   function imageToPalette(file) {
     const url = URL.createObjectURL(file);
     const image = new Image();
@@ -960,18 +976,7 @@
     use.type = 'button';
     use.className = 'btn btn-sm';
     use.textContent = 'Match sliders to the first colour';
-    use.addEventListener('click', () => {
-      const rgb = C.hexToRgb(colors[0]);
-      if (!rgb) return;
-      const hsl = C.rgbToHsl(rgb.r, rgb.g, rgb.b);
-      commitUndo();
-      state.values.energy = Math.round(C.clamp((hsl.h - hsl.s * 0.5 / 3.6) / 3.6, 0, 100));
-      state.values.sparkle = Math.round(C.clamp((hsl.s - 40) / 0.6, 0, 100));
-      state.values.calmness = Math.round(C.clamp((hsl.l - 20) / 0.7, 0, 100));
-      vibePinned = false;
-      buildSliders();
-      updateMood();
-    });
+    use.addEventListener('click', () => matchSlidersTo(colors[0]));
     container.appendChild(use);
   }
 
@@ -1550,6 +1555,42 @@
     dialog.showModal();
   }
 
+  function compareSheet() {
+    const collection = compareBase;
+    if (!collection) return null;
+    const columns = [['Current', activePalette()], [collection.name || 'Saved', collection.palette || []]];
+    if (compareSecondId) {
+      const second = state.collections.find((item) => item.id === compareSecondId);
+      if (second) columns.push([second.name || 'Palette', second.palette || []]);
+    }
+    const colWidth = 260;
+    const width = 96 + colWidth * columns.length;
+    const height = 300;
+    const body = columns.map(([label, palette], columnIndex) => {
+      const x = 48 + columnIndex * colWidth;
+      const chips = palette.map((hex, index) => {
+        const rgb = C.hexToRgb(hex);
+        const ink = rgb ? C.bestInk(rgb) : null;
+        const grade = ink ? C.grade(ink.ratio) : null;
+        const y = 120 + index * 40;
+        return `<rect x="${x}" y="${y}" width="42" height="30" rx="6" fill="${hex}" stroke="#e2e0da"/>
+      <text x="${x + 52}" y="${y + 14}" font-family="system-ui, sans-serif" font-size="12" fill="#24232b">${hex}</text>
+      <text x="${x + 52}" y="${y + 27}" font-family="system-ui, sans-serif" font-size="10" fill="#777582">${ink ? ink.ratio.toFixed(1) + ':1 ' + grade.level : ''}</text>`;
+      }).join('\n      ');
+      return `<text x="${x}" y="96" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#24232b">${label}</text>
+      ${chips}`;
+    }).join('\n    ');
+
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Mood Mixer palette comparison">
+  <rect width="${width}" height="${height}" fill="#f5f4f1"/>
+  <text x="48" y="46" font-family="system-ui, sans-serif" font-size="20" font-weight="700" fill="#24232b">Palette comparison</text>
+  <text x="48" y="68" font-family="system-ui, sans-serif" font-size="12" fill="#777582">${new Date().toISOString().slice(0, 10)}</text>
+  ${body}
+  <text x="48" y="${height - 20}" font-family="system-ui, sans-serif" font-size="11" fill="#777582">Mood Mixer · drsamonline.github.io/mood-mixer</text>
+</svg>`;
+  }
+
   function printHistory() {
     const sheet = byId('printSheet');
     if (!sheet) return;
@@ -1830,6 +1871,50 @@
 
     on('copyPaletteBtn', 'click', () => copyText(activePalette().join(', '), 'Four-color palette copied'));
     on('copyHexBtn', 'click', () => copyText(C.toHex(current), `${C.toHex(current)} copied`));
+    on('seedPhotoBtn', 'click', () => byId('seedPhotoInput')?.click());
+
+    on('seedPhotoInput', 'change', (event) => {
+      const file = event.target.files?.[0];
+      event.target.value = '';
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      const image = new Image();
+      image.onload = () => {
+        const size = 48;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(image, 0, 0, size, size);
+        URL.revokeObjectURL(url);
+        let data = null;
+        try {
+          data = ctx.getImageData(0, 0, size, size).data;
+        } catch (error) {
+          data = null;
+        }
+        if (!data) {
+          announce('That image could not be read');
+          return;
+        }
+        const pixels = [];
+        for (let i = 0; i < data.length; i += 4) {
+          pixels.push({ r: data[i], g: data[i + 1], b: data[i + 2], a: data[i + 3] });
+        }
+        const colors = C.dominant(pixels, 3);
+        if (!colors.length) {
+          announce('No colours found in that image');
+          return;
+        }
+        if (matchSlidersTo(colors[0])) announce(`Seeded from the photo: ${colors[0]}`);
+      };
+      image.onerror = () => {
+        URL.revokeObjectURL(url);
+        announce('That file is not an image the browser can read');
+      };
+      image.src = url;
+    });
+
     on('copyLinkBtn', 'click', async () => {
       const url = shareUrl();
       if (navigator.share) {
@@ -2061,6 +2146,30 @@
       collections: state.collections
     }, null, 2), 'application/json'));
 
+    on('renameFolderBtn', 'click', () => {
+      if (state.folderFilter === 'All') {
+        announce('Pick a folder first');
+        return;
+      }
+      const from = state.folderFilter;
+      const next = window.prompt(`Rename the folder "${from}" to:`, from);
+      if (next === null) return;
+      const to = next.trim();
+      if (!to || to === from) return;
+      let moved = 0;
+      state.saved.forEach((mood) => {
+        if (folderOf(mood) === from) {
+          mood.folder = to;
+          moved += 1;
+        }
+      });
+      state.folderFilter = to;
+      state.lastFolder = to;
+      renderSaved();
+      persistNow();
+      announce(`${moved} mood${moved === 1 ? '' : 's'} moved to ${to}`);
+    });
+
     on('restoreDeleteBtn', 'click', () => {
       if (!deletedBuffer) return;
       state.saved = deletedBuffer.concat(state.saved).slice(0, MAX_SAVED);
@@ -2134,6 +2243,11 @@
     });
 
     on('compareCloseBtn', 'click', () => byId('compareDialog')?.close());
+
+    on('compareSaveBtn', 'click', () => {
+      const svg = compareSheet();
+      if (svg) download('mood-mixer-compare.svg', svg, 'image/svg+xml');
+    });
 
     on('compareSecond', 'change', (event) => {
       compareSecondId = event.target.value;

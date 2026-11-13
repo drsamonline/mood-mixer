@@ -1791,3 +1791,16 @@ body.focus-locked {
 .compare-body {
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
 }
+
+/* ---------- folder row ---------- */
+.folder-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.folder-row .folder-chips {
+  margin-bottom: 0;
+}

@@ -147,19 +147,25 @@
   <button id="again" type="button">Run again</button>
 
   <script>
-    const FILES = [
+    /* The asset version is read from the mixer page so this list cannot drift. */
+    async function assetVersion() {
+      try {
+        const response = await fetch('./mixer/index.html', { cache: 'no-store' });
+        const text = await response.text();
+        const match = text.match(/\?v=([0-9.]+)/);
+        if (match) return match[1];
+      } catch (error) {
+        // fall through
+      }
+      return '2.12.0';
+    }
+
+    const BASE_FILES = [
       './',
       './index.html',
       './404.html',
       './mixer/',
       './mixer/index.html',
-      './theme.css?v=2.11.0',
-      './landing.css?v=2.11.0',
-      './style.css?v=2.11.0',
-      './color-core.js?v=2.11.0',
-      './landing.js?v=2.11.0',
-      './script.js?v=2.11.0',
-      './manifest.json?v=2.11.0',
       './favicon.svg',
       './icons/icon-192.png',
       './icons/icon-512.png',
@@ -189,6 +195,13 @@
       } else {
         swState.textContent = 'service worker: unsupported';
       }
+
+      const version = await assetVersion();
+      const versioned = [
+        './theme.css', './landing.css', './style.css', './color-core.js',
+        './landing.js', './script.js', './manifest.json'
+      ].map((file) => `${file}?v=${version}`);
+      const FILES = BASE_FILES.slice(0, 6).concat(versioned, BASE_FILES.slice(6));
 
       const cacheKeys = await caches.keys();
       const cacheName = cacheKeys.find((key) => key.startsWith('mood-mixer-'));
