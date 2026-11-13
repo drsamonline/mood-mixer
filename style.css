@@ -1838,3 +1838,133 @@ body.focus-locked {
 .app-container:not(.focus-mode) .focus-caption {
   display: none;
 }
+
+/* ---------- focus-mode lighthouse ---------- */
+.lighthouse {
+  /* The drawing takes the mood colour but is pulled towards the backdrop's
+   * opposite ink, so it never disappears into the colour behind it. */
+  --lighthouse-ink: color-mix(in srgb, var(--lh-ink, #ffffff) 82%, var(--lh-mood, #7ec8e3));
+  position: fixed;
+  right: clamp(-40px, 2vw, 24px);
+  bottom: 0;
+  z-index: 1;
+  display: none;
+  width: min(52vw, 620px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.8s ease;
+}
+
+.lighthouse svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+}
+
+.app-container.focus-mode ~ .lighthouse,
+html.focus-on .lighthouse {
+  display: block;
+  opacity: 0.9;
+}
+
+.lighthouse .lh-sweep {
+  transform-origin: 200px 84px;
+  animation: lhSweep 7s ease-in-out infinite alternate;
+}
+
+.lighthouse .lh-lamp {
+  animation: lhPulse 3.5s ease-in-out infinite;
+}
+
+.lighthouse .lh-glow {
+  animation: lhGlow 5s ease-in-out infinite alternate;
+}
+
+@keyframes lhGlow {
+  from { opacity: 0.12; }
+  to { opacity: 0.3; }
+}
+
+.lighthouse .lh-water {
+  animation: lhDrift 9s ease-in-out infinite alternate;
+}
+
+@keyframes lhSweep {
+  from { transform: rotate(-13deg); }
+  to { transform: rotate(13deg); }
+}
+
+@keyframes lhPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+@keyframes lhDrift {
+  from { transform: translateX(-6px); }
+  to { transform: translateX(6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lighthouse .lh-sweep,
+  .lighthouse .lh-lamp,
+  .lighthouse .lh-water {
+    animation: none;
+  }
+}
+
+@media print {
+  .lighthouse {
+    display: none !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .lighthouse {
+    right: -18px;
+    width: 74vw;
+  }
+}
+
+/* ---------- visual polish ---------- */
+::selection {
+  background: color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.hero-vibe-section,
+.controls-panel.open,
+.app-header,
+.support-pay {
+  box-shadow: var(--shadow), inset 0 1px 0 color-mix(in srgb, #ffffff 55%, transparent);
+}
+
+.btn-primary,
+.focus-mode-btn:hover,
+.upi-copy:hover {
+  background-image: linear-gradient(180deg, color-mix(in srgb, #ffffff 14%, transparent), transparent);
+}
+
+.hero-swatch:focus-visible,
+.pair-card:focus-visible,
+.preset-btn:focus-visible,
+.image-chip:focus-visible {
+  outline: 3px solid var(--color-text);
+  outline-offset: 2px;
+}
+
+.panel-section + .panel-section {
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+}
+
+.history-item,
+.saved-mood-item,
+.collection-row {
+  transition: background 0.16s ease, border-color 0.16s ease;
+}
+
+.history-item:hover,
+.saved-mood-item:hover {
+  background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+  border-radius: var(--radius-sm);
+}

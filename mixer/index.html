@@ -10,20 +10,68 @@
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-  <link rel="manifest" href="../manifest.json?v=2.14.0">
+  <link rel="manifest" href="../manifest.json?v=2.15.0">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Mood Mixer — live color playground">
   <meta property="og:description" content="Sliders in, palettes out. Copy hex, check contrast, export CSS, JSON, Tailwind or PNG.">
   <meta property="og:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
-  <link rel="stylesheet" href="../theme.css?v=2.14.0">
-  <link rel="stylesheet" href="../style.css?v=2.14.0">
+  <link rel="stylesheet" href="../theme.css?v=2.15.0">
+  <link rel="stylesheet" href="../style.css?v=2.15.0">
 </head>
 
 <body>
   <a class="skip-link" href="#heroDisplay">Skip to the palette</a>
   <div id="colorBackdrop" class="color-backdrop"></div>
+  <div id="lighthouse" class="lighthouse" aria-hidden="true">
+    <svg viewBox="0 0 400 260" preserveAspectRatio="xMidYMax meet" focusable="false">
+      <defs>
+        <linearGradient id="lhBeam" gradientUnits="userSpaceOnUse" x1="200" y1="84" x2="336" y2="84">
+          <stop offset="0" stop-color="var(--lighthouse-ink)" stop-opacity="0.42" />
+          <stop offset="0.55" stop-color="var(--lighthouse-ink)" stop-opacity="0.14" />
+          <stop offset="1" stop-color="var(--lighthouse-ink)" stop-opacity="0" />
+        </linearGradient>
+        <linearGradient id="lhBeamFlip" gradientUnits="userSpaceOnUse" x1="200" y1="84" x2="64" y2="84">
+          <stop offset="0" stop-color="var(--lighthouse-ink)" stop-opacity="0.42" />
+          <stop offset="0.55" stop-color="var(--lighthouse-ink)" stop-opacity="0.14" />
+          <stop offset="1" stop-color="var(--lighthouse-ink)" stop-opacity="0" />
+        </linearGradient>
+        <linearGradient id="lhTower" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="var(--lighthouse-ink)" stop-opacity="0.92" />
+          <stop offset="1" stop-color="var(--lighthouse-ink)" stop-opacity="0.55" />
+        </linearGradient>
+      </defs>
+
+      <g class="lh-sweep">
+        <polygon points="200,84 70,58 70,110" fill="url(#lhBeamFlip)" opacity="0.75" />
+        <polygon points="200,84 330,58 330,110" fill="url(#lhBeam)" opacity="0.75" />
+      </g>
+
+      <g class="lh-body">
+        <path d="M150 232 Q200 214 250 232 L266 260 L134 260 Z" fill="var(--lighthouse-ink)" opacity="0.18" />
+
+        <path d="M176 214 L184 104 L216 104 L224 214 Z" fill="url(#lhTower)" />
+        <path d="M178 178 L222 178 L223 194 L177 194 Z" fill="var(--lighthouse-ink)" opacity="0.35" />
+        <path d="M181 134 L219 134 L220 150 L180 150 Z" fill="var(--lighthouse-ink)" opacity="0.35" />
+
+        <rect x="182" y="96" width="36" height="9" rx="2" fill="var(--lighthouse-ink)" opacity="0.85" />
+        <rect x="188" y="74" width="24" height="22" rx="2" fill="var(--lighthouse-ink)" opacity="0.28" />
+        <circle class="lh-glow" cx="200" cy="85" r="16" fill="var(--lighthouse-ink)" opacity="0.18" />
+        <circle class="lh-lamp" cx="200" cy="85" r="5.5" fill="var(--lighthouse-ink)" />
+        <path d="M186 74 L214 74 L200 58 Z" fill="var(--lighthouse-ink)" opacity="0.9" />
+        <circle cx="200" cy="54" r="2.4" fill="var(--lighthouse-ink)" opacity="0.8" />
+
+        <rect x="192" y="204" width="16" height="12" rx="2" fill="var(--lighthouse-ink)" opacity="0.5" />
+      </g>
+
+      <g class="lh-water">
+        <path d="M60 238 Q100 228 140 238 T220 238 T300 238 T380 238" fill="none" stroke="var(--lighthouse-ink)" stroke-opacity="0.32" stroke-width="3" stroke-linecap="round" />
+        <path d="M40 250 Q80 240 120 250 T200 250 T280 250 T360 250" fill="none" stroke="var(--lighthouse-ink)" stroke-opacity="0.2" stroke-width="3" stroke-linecap="round" />
+      </g>
+    </svg>
+  </div>
+
   <canvas id="particleCanvas" class="particle-canvas" aria-hidden="true"></canvas>
 
   <div id="app" class="app-container">
@@ -414,8 +462,8 @@
     </form>
   </dialog>
 
-  <script src="../color-core.js?v=2.14.0"></script>
-  <script src="../script.js?v=2.14.0"></script>
+  <script src="../color-core.js?v=2.15.0"></script>
+  <script src="../script.js?v=2.15.0"></script>
 </body>
 
 </html>

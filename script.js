@@ -189,6 +189,10 @@
       state.controlsOpen = true;
       touched = true;
     }
+    if (params.get('focus') === '1') {
+      wantFocus = true;
+      touched = true;
+    }
     return touched;
   }
 
@@ -1266,7 +1270,22 @@
     renderPairs(palette);
     renderVision(palette);
 
-    const backdropInk = C.bestInk(C.hexToRgb(palette[0]) || current);
+    /* With a gradient two colours share the screen, so pick the ink that keeps
+     * the higher minimum contrast against both of them. */
+    const backdropA = C.hexToRgb(palette[0]) || current;
+    const backdropB = C.hexToRgb(palette[1]) || backdropA;
+    const white = { r: 255, g: 255, b: 255 };
+    const nearBlack = { r: 17, g: 17, b: 17 };
+    const minWhite = Math.min(C.contrastRatio(backdropA, white), C.contrastRatio(backdropB, white));
+    const minBlack = Math.min(C.contrastRatio(backdropA, nearBlack), C.contrastRatio(backdropB, nearBlack));
+    const useWhite = minWhite >= minBlack;
+    const backdropInk = {
+      ink: useWhite ? '#ffffff' : '#111111',
+      on: useWhite ? 'white' : 'black',
+      ratio: Math.max(minWhite, minBlack)
+    };
+    document.documentElement.style.setProperty('--lh-mood', palette[0]);
+    document.documentElement.style.setProperty('--lh-ink', backdropInk.ink);
     document.documentElement.style.setProperty('--on-backdrop', backdropInk.ink);
     document.documentElement.setAttribute('data-backdrop-ink', backdropInk.on);
     if (document.querySelector('.app-container.focus-mode')) flashFocusCaption();
@@ -1476,6 +1495,7 @@
 
   let compareBase = null;
   let compareSecondId = '';
+  let wantFocus = false;
 
   function compareRows(palette, label) {
     const wrap = document.createElement('div');
@@ -1784,6 +1804,7 @@
     appContainer.classList.toggle('focus-mode', active);
     appContainer.classList.remove('hud-visible');
     document.body.classList.toggle('focus-locked', active);
+    document.documentElement.classList.toggle('focus-on', active);
     if (active) startDrift();
     else stopDrift();
     if (button) {
@@ -2644,6 +2665,7 @@
     particles.init();
     if (state.drift) startDrift();
     updateMood();
+    if (wantFocus) setFocusMode(true);
     if (fromHash) announce('Loaded palette from link');
     if ('serviceWorker' in navigator && window.isSecureContext) {
       navigator.serviceWorker.register('../service-worker.js').catch(() => {});

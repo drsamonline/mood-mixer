@@ -2,6 +2,15 @@
 
 Everything below is one static site: HTML, CSS, vanilla JavaScript. No build step, no framework, no network calls.
 
+## 2.15.0 — 2026-11-13
+
+**Visual polish**
+
+- Focus mode gains a vector lighthouse: tapered tower, gallery, lantern with a glow, roof, rocks and two water lines, plus two beam shafts that sweep on a seven-second alternate and a lamp that pulses.
+- The drawing is tinted from the current colour but pulled 82 % towards the backdrop's opposite ink, so it reads on light and dark palettes alike.
+- `prefers-reduced-motion` stops the sweep, the pulse and the water drift; print hides the drawing entirely.
+- Polish pass across the app: selection colour, inner highlight on cards, sheen on primary buttons, visible focus rings on swatches, preset and pair cards, dividers between panel sections, hover states on history and saved rows.
+
 ## 2.14.0 — 2026-11-13
 
 **Hardening**

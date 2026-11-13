@@ -61,13 +61,15 @@ The same block is on the [landing page](https://drsamonline.github.io/mood-mixer
 |---|---|
 | ![Mood Mixer landing page](screenshots/landing.png) | ![Mood Mixer live mixer](screenshots/mixer.png) |
 
-| Neon theme, dark UI | Mobile |
+| Focus mode, lighthouse | Neon theme, dark UI |
 |---|---|
-| ![Neon theme](screenshots/mixer-neon.png) | ![Mixer on a phone](screenshots/mixer-mobile.png) |
+| ![Focus mode with the animated lighthouse](screenshots/focus.png) | ![Neon theme](screenshots/mixer-neon.png) |
 
-![Support block: UPI ID, QR, Ko-fi, PayPal and books](screenshots/support.png)
+| Mobile | Support block |
+|---|---|
+| ![Mixer on a phone](screenshots/mixer-mobile.png) | ![Support block](screenshots/support.png) |
 
-All captures are real renders of this repository, taken at 1440×900, 1440×1000 and 390×844.
+All captures are real renders of this repository at 1440×900, 1440×1000 and 390×844.
 
 ---
 
@@ -81,7 +83,7 @@ All captures are real renders of this repository, taken at 1440×900, 1440×1000
 - **Custom sliders.** Add sliders that drive hue, saturation or lightness, rename them, remove them.
 - **Locks.** Freeze hue, saturation or lightness and move everything else.
 - **Exports.** Copy hex, copy the palette, copy it as a text list, or download CSS variables, JSON, a Tailwind config or a 1200×630 PNG card.
-- **Shareable links.** The whole state packs into a six-character code — `#p=1in8hx` — carried in the URL hash; a Copy link button puts the full link on the clipboard. Longer query-style links from earlier versions still open.
+- **Shareable links.** The whole state packs into a six-character code — `#p=1in8hx` — carried in the URL hash, with `&focus=1` to open straight into focus mode; a Copy link button puts the full link on the clipboard. Longer query-style links from earlier versions still open.
 - **Vision check.** The current palette shown as deuteranopia, protanopia and tritanopia see it, beside normal vision.
 - **Seed from a photo or the clipboard.** A `From photo` button reads the dominant colour of an image and moves the sliders to match; pasting an image anywhere does the same, without opening the panel.
 - **From an image.** Drop a photo or pick a file: five dominant colours are read in the browser, copyable one by one, or matched back to the sliders. Nothing is uploaded.
@@ -107,7 +109,7 @@ All captures are real renders of this repository, taken at 1440×900, 1440×1000
 - **Offline self-test.** `selftest.html` loads every precached file and reports what came from the network and what came from the cache; run it online, then with the network off.
 - **Print card.** One click prints the palette as a clean card — vibe, hex, RGB, HSL and the four colours in a 2×2 grid, nothing else.
 - **Undo and redo.** Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, or the buttons.
-- **Focus mode.** A hex caption fades in for a moment when the screen turns to colour, then leaves. One tap on the screen and the whole display becomes the colour — header, card, swatches, controls, support bar and footer all go. Tap anywhere to bring the interface back for a few seconds, or press Escape to leave.
+- **Focus mode.** A vector lighthouse rises in the corner, its beam sweeping and its lamp pulsing, drawn in a tone derived from the current colour so it never disappears into the backdrop. A hex caption fades in for a moment, then leaves. One tap on the screen and the whole display becomes the colour — header, card, swatches, controls, support bar and footer all go. Tap anywhere to bring the interface back for a few seconds, or press Escape to leave.
 - **Randomise from the header.** One button in the header, or `R`, reshuffles every slider; undo puts it back.
 - **Four UI themes, dark mode, high contrast.** Modern, minimalist, retro and neon, each with its own type and colour tokens.
 - **Sound and particles.** Optional WebAudio ticks, and an ambient particle layer that follows the sparkle slider.
