@@ -1714,3 +1714,49 @@ body.focus-locked {
 [data-theme="dark"] .compare-list dd.is-fail {
   color: #ff9ec1;
 }
+
+/* ---------- naming dialog ---------- */
+.name-dialog {
+  max-width: 420px;
+}
+
+.name-input {
+  width: 100%;
+  min-height: 38px;
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-solid);
+  color: var(--color-text);
+  font-size: 0.86rem;
+}
+
+.name-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.name-chip {
+  padding: 4px 9px;
+  border: 1px dashed color-mix(in srgb, var(--color-text) 26%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.name-chip:hover {
+  border-color: var(--color-primary);
+  color: var(--color-text);
+}
+
+/* ---------- compare winner ---------- */
+.compare-list dd.is-winner {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

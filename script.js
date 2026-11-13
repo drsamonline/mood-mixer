@@ -78,6 +78,7 @@
     drift: Boolean(stored.drift),
     vibe: typeof stored.vibe === 'string' ? stored.vibe : '',
     lastFolder: typeof stored.lastFolder === 'string' ? stored.lastFolder : 'Unfiled',
+    quiet: Boolean(stored.quiet),
     pinned: Array.isArray(stored.pinned) && stored.pinned.length ? stored.pinned.slice(0, 4) : null,
     locks: Object.assign({ hue: false, sat: false, lit: false }, stored.locks || {}),
     lockedValues: Object.assign({ hue: null, sat: null, lit: null }, stored.lockedValues || {})
@@ -1138,6 +1139,8 @@
     if (particlesToggle) particlesToggle.checked = state.particles;
     const driftToggle = byId('driftToggle');
     if (driftToggle) driftToggle.checked = state.drift;
+    const quietToggle = byId('quietToggle');
+    if (quietToggle) quietToggle.checked = state.quiet;
     const pinnedBadge = byId('pinnedBadge');
     if (pinnedBadge) pinnedBadge.hidden = !pinnedPalette;
 
@@ -1314,6 +1317,7 @@
   }
 
   function announce(message) {
+    if (state.quiet) return;
     const status = byId('copyStatus');
     if (!status) return;
     status.textContent = message;
@@ -1400,6 +1404,44 @@
 </svg>`;
   }
 
+  let nameTarget = null;
+  let saveMoodNamedRef = null;
+  let saveCollectionNamedRef = null;
+
+  function requestName(kind) {
+    const dialog = byId('nameDialog');
+    const input = byId('nameInput');
+    if (!dialog || !input || typeof dialog.showModal !== 'function') {
+      const fallback = window.prompt(kind === 'mood' ? 'Name this mood:' : 'Name this palette:', autoName());
+      if (fallback) applyName(fallback);
+      return;
+    }
+    nameTarget = kind;
+    const suggestions = nameSuggestions();
+    input.value = suggestions[0] || autoName();
+    const chips = byId('nameSuggestions');
+    if (chips) {
+      chips.replaceChildren(...suggestions.map((suggestion) => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'name-chip';
+        chip.textContent = suggestion;
+        chip.addEventListener('click', () => {
+          input.value = suggestion;
+          input.focus();
+        });
+        return chip;
+      }));
+    }
+    dialog.showModal();
+    input.select();
+  }
+
+  function applyName(name) {
+    if (nameTarget === 'collection' && saveCollectionNamedRef) saveCollectionNamedRef(name);
+    else if (saveMoodNamedRef) saveMoodNamedRef(name);
+  }
+
   function compareRows(palette, label) {
     const wrap = document.createElement('div');
     wrap.className = 'compare-column';
@@ -1443,10 +1485,37 @@
     const heading = byId('compareTitle');
     if (heading) heading.textContent = `${collection.name || 'Palette'} vs the current palette`;
     if (body) {
+      const currentPalette = activePalette();
+      const savedPalette = collection.palette || [];
       body.replaceChildren(
-        compareRows(activePalette(), 'Current'),
-        compareRows(collection.palette || [], collection.name || 'Saved')
+        compareRows(currentPalette, 'Current'),
+        compareRows(savedPalette, collection.name || 'Saved')
       );
+
+      /* Mark the higher-contrast colour at each position. */
+      const lists = body.querySelectorAll('.compare-list');
+      if (lists.length === 2) {
+        const ratios = (palette) => palette.map((hex) => {
+          const rgb = C.hexToRgb(hex);
+          const ink = rgb ? C.bestInk(rgb) : null;
+          return ink ? ink.ratio : 0;
+        });
+        const a = ratios(currentPalette);
+        const b = ratios(savedPalette);
+        const mark = (list, index, wins) => {
+          const dd = list.querySelectorAll('dd')[index];
+          if (!dd) return;
+          dd.classList.toggle('is-winner', wins);
+          if (wins) dd.textContent = `${dd.textContent} \u25b2`;
+        };
+        for (let i = 0; i < 4; i += 1) {
+          const left = a[i] || 0;
+          const right = b[i] || 0;
+          if (Math.abs(left - right) < 0.05) continue;
+          mark(lists[0], i, left > right);
+          mark(lists[1], i, right > left);
+        }
+      }
     }
     dialog.showModal();
   }
@@ -1651,6 +1720,19 @@
     }, 4000);
   }
 
+  function nameSuggestions() {
+    const harmony = (HARMONY_LABELS[state.harmony] || state.harmony || '').toLowerCase();
+    const vibe = String(currentVibe || 'Mood').replace(/\s+/g, ' ').trim();
+    const named = C.nameOf(C.toHex(current));
+    const colour = named ? named.name : 'colour';
+    const list = [
+      `${vibe} \u00b7 ${harmony}`,
+      `${colour} at ${state.values.energy ?? 50}`,
+      `${vibe} ${colour}`
+    ];
+    return Array.from(new Set(list)).slice(0, 3);
+  }
+
   function autoName() {
     const harmony = (HARMONY_LABELS[state.harmony] || state.harmony || '').toLowerCase();
     const vibe = String(currentVibe || 'Mood').replace(/\s+/g, ' ').trim();
@@ -1807,8 +1889,9 @@
     on('randomizeBtn', 'click', randomize);
     on('randomizeHeader', 'click', randomize);
 
-    on('saveCollectionBtn', 'click', () => {
-      const name = window.prompt('Name this palette:', autoName());
+    on('saveCollectionBtn', 'click', () => requestName('collection'));
+
+    saveCollectionNamedRef = (name) => {
       if (!name || !name.trim()) return;
       state.collections.unshift({
         id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
@@ -1826,7 +1909,7 @@
       renderCollections();
       persistNow();
       announce('Palette saved to collections');
-    });
+    };
 
     const imageInput = byId('imageInput');
     const dropZone = byId('imageDrop');
@@ -1895,8 +1978,9 @@
       schedulePersist();
     });
 
-    on('saveMoodBtn', 'click', () => {
-      const name = window.prompt('Name this mood:', autoName());
+    on('saveMoodBtn', 'click', () => requestName('mood'));
+
+    saveMoodNamedRef = (name) => {
       if (!name || !name.trim()) return;
       state.saved.unshift({
         id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
@@ -1924,12 +2008,25 @@
         announce('Mood saved');
       }
       tick(760);
-    });
+    };
 
-    on('exportBtn', 'click', () => download('mood-mixer-backup.json', JSON.stringify({
+    on('exportBtn', 'click', () => download('mood-mixer-bundle.json', JSON.stringify({
       app: 'Mood Mixer',
-      version: 2,
+      version: 3,
+      appVersion: '2.10.0',
       exported: new Date().toISOString(),
+      settings: {
+        model: state.model,
+        blend: state.blend,
+        harmony: state.harmony,
+        background: state.background,
+        uiTheme: state.uiTheme,
+        theme: state.theme,
+        contrast: state.contrast,
+        values: snapshotValues(),
+        labels: state.labels,
+        vibes: state.vibes
+      },
       moods: state.saved,
       collections: state.collections
     }, null, 2), 'application/json'));
@@ -1986,6 +2083,21 @@
     });
 
     on('compareCloseBtn', 'click', () => byId('compareDialog')?.close());
+
+    on('nameSaveBtn', 'click', () => {
+      const input = byId('nameInput');
+      const value = input ? input.value.trim() : '';
+      byId('nameDialog')?.close();
+      if (value) applyName(value);
+    });
+
+    on('nameCancelBtn', 'click', () => byId('nameDialog')?.close());
+
+    on('nameInput', 'keydown', (event) => {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      byId('nameSaveBtn')?.click();
+    });
 
     on('importCancelBtn', 'click', () => {
       pendingImport = null;
@@ -2083,6 +2195,15 @@
     on('audioToggle', 'change', (event) => {
       state.audio = event.target.checked;
       if (state.audio) tick(660);
+      schedulePersist();
+    });
+
+    on('quietToggle', 'change', (event) => {
+      state.quiet = event.target.checked;
+      if (state.quiet) {
+        const status = byId('copyStatus');
+        if (status) status.textContent = '';
+      }
       schedulePersist();
     });
 
