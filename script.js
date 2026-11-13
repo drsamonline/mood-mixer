@@ -1806,6 +1806,58 @@
 
   /* ---------- focus mode ---------- */
 
+  /* The beam is rotated by script, not by a CSS transform on an SVG group:
+   * that combination is the one that silently does nothing in some engines. */
+  const beacon = {
+    frame: 0,
+    angle: 0,
+    last: 0,
+    running: false,
+
+    element() {
+      return document.querySelector('.lighthouse .lh-sweep');
+    },
+
+    speed() {
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const seconds = reduced ? 56 : 14;
+      return 360 / seconds;
+    },
+
+    tick: function tick(now) {
+      const self = beacon;
+      const element = self.element();
+      if (!element) {
+        self.running = false;
+        return;
+      }
+      if (!self.last) self.last = now;
+      const dt = Math.min((now - self.last) / 1000, 0.25);
+      self.last = now;
+      self.angle = (self.angle + self.speed() * dt) % 360;
+      element.setAttribute('transform', `rotate(${self.angle.toFixed(2)} 200 84)`);
+      self.frame = window.requestAnimationFrame(tick);
+    },
+
+    start() {
+      const element = this.element();
+      if (!element) return;
+      if (this.running) return;
+      if (!state.lighthouseMotion) {
+        element.removeAttribute('transform');
+        return;
+      }
+      this.running = true;
+      this.last = 0;
+      this.frame = window.requestAnimationFrame(this.tick);
+    },
+
+    stop() {
+      this.running = false;
+      window.cancelAnimationFrame(this.frame);
+    }
+  };
+
   function flashFocusCaption() {
     const caption = byId('focusCaption');
     if (!caption) return;
@@ -1823,8 +1875,13 @@
     appContainer.classList.remove('hud-visible');
     document.body.classList.toggle('focus-locked', active);
     document.documentElement.classList.toggle('focus-on', active);
-    if (active) startDrift();
-    else stopDrift();
+    if (active) {
+      startDrift();
+      beacon.start();
+    } else {
+      stopDrift();
+      beacon.stop();
+    }
     if (button) {
       button.setAttribute('aria-pressed', String(active));
       button.textContent = active ? '\u2715 Exit focus view' : '\u26f6 Focus on color';
@@ -2495,6 +2552,8 @@
       state.lighthouseMotion = event.target.checked;
       syncSettings();
       schedulePersist();
+      if (state.lighthouseMotion) beacon.start();
+      else beacon.stop();
       announce(state.lighthouseMotion ? 'Lighthouse beacon on' : 'Lighthouse still');
     });
 
@@ -2502,6 +2561,8 @@
       state.lighthouseMotion = !state.lighthouseMotion;
       syncSettings();
       schedulePersist();
+      if (state.lighthouseMotion) beacon.start();
+      else beacon.stop();
       const button = byId('beaconBtn');
       if (button) button.setAttribute('aria-pressed', String(state.lighthouseMotion));
       announce(state.lighthouseMotion ? 'Lighthouse beacon on' : 'Lighthouse still');
@@ -2702,6 +2763,7 @@
     if (state.drift) startDrift();
     updateMood();
     if (wantFocus) setFocusMode(true);
+    beacon.start();
     if (fromHash) announce('Loaded palette from link');
     if ('serviceWorker' in navigator && window.isSecureContext) {
       navigator.serviceWorker.register('../service-worker.js').catch(() => {});

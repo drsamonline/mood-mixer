@@ -2,6 +2,14 @@
 
 Everything below is one static site: HTML, CSS, vanilla JavaScript. No build step, no framework, no network calls.
 
+## 2.18.0 — 2026-11-13
+
+- The beam is now driven by `requestAnimationFrame` writing `transform="rotate(…)"` on the SVG group, so it no longer depends on CSS transform support for SVG elements. Measured: 6.4° → 12.9° → 31.3° → 44.6° over two seconds.
+- The lighthouse is visible on the mixer as well as in focus mode — faint at 0.38 opacity in the lower corner, full strength in focus — so the motion is visible without hunting for a mode.
+- Beacon starts on load, not only when focus mode opens.
+- The `Beacon` button and the Settings switch both stop and restart the loop immediately.
+- Under reduced motion the beam still turns, at a 56-second revolution, while the float and water drift are dropped.
+
 ## 2.17.0 — 2026-11-13
 
 - The beacon now animates without any script: motion is on by default in CSS and only an explicit `lh-still` opt-out stops it, so a JavaScript failure can no longer leave a dead lighthouse.

@@ -1,6 +1,6 @@
 {
   "name": "mood-mixer",
-  "version": "2.17.0",
+  "version": "2.18.0",
   "private": true,
   "description": "A private, offline-ready color playground: sliders in, palettes out.",
   "homepage": "https://drsamonline.github.io/mood-mixer/",

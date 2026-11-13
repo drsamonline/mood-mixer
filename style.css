@@ -1846,13 +1846,13 @@ body.focus-locked {
   --lighthouse-ink: color-mix(in srgb, var(--lh-ink, #ffffff) 82%, var(--lh-mood, #7ec8e3));
   position: fixed;
   right: clamp(-40px, 2vw, 24px);
-  bottom: 0;
+  bottom: 64px;
   z-index: 1;
-  display: none;
-  width: min(52vw, 620px);
-  opacity: 0;
+  display: block;
+  width: min(38vw, 430px);
+  opacity: 0.38;
   pointer-events: none;
-  transition: opacity 0.8s ease;
+  transition: opacity 0.8s ease, width 0.8s ease;
 }
 
 .lighthouse svg {
@@ -1866,13 +1866,15 @@ body.focus-locked {
 html.focus-on .lighthouse,
 body:has(.app-container.focus-mode) .lighthouse {
   display: block;
+  bottom: 0;
+  width: min(52vw, 620px);
   opacity: 0.9;
 }
 
 .lighthouse .lh-sweep {
   transform-box: view-box;
   transform-origin: 200px 84px;
-  animation: lhBeacon 14s linear infinite;
+  will-change: transform;
 }
 
 .lighthouse .lh-lamp {
@@ -1890,11 +1892,6 @@ body:has(.app-container.focus-mode) .lighthouse {
 
 .lighthouse {
   animation: lhFloat 6s ease-in-out infinite alternate;
-}
-
-@keyframes lhBeacon {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 @keyframes lhPulse {
@@ -1926,10 +1923,14 @@ html.lh-still .lighthouse .lh-water {
   animation: none;
 }
 
-/* Reduced motion: drop the spatial movement, keep the light alive. */
+html.lh-still .lighthouse .lh-sweep {
+  transform: none;
+}
+
+/* Reduced motion: drop the float and the water drift, keep the light alive.
+ * The beacon keeps turning, at a quarter speed, because it is driven from JS. */
 @media (prefers-reduced-motion: reduce) {
   html:not(.lh-still) .lighthouse,
-  html:not(.lh-still) .lighthouse .lh-sweep,
   html:not(.lh-still) .lighthouse .lh-water {
     animation: none;
   }
@@ -1952,7 +1953,8 @@ html.lh-still .lighthouse .lh-water {
 @media (max-width: 720px) {
   .lighthouse {
     right: -18px;
-    width: 74vw;
+    bottom: 74px;
+    width: 66vw;
   }
 }
 
