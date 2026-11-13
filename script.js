@@ -76,6 +76,8 @@
     folderFilter: typeof stored.folderFilter === 'string' ? stored.folderFilter : 'All',
     collections: Array.isArray(stored.collections) ? stored.collections.slice(0, 40) : [],
     drift: Boolean(stored.drift),
+    vibe: typeof stored.vibe === 'string' ? stored.vibe : '',
+    pinned: Array.isArray(stored.pinned) && stored.pinned.length ? stored.pinned.slice(0, 4) : null,
     locks: Object.assign({ hue: false, sat: false, lit: false }, stored.locks || {}),
     lockedValues: Object.assign({ hue: null, sat: null, lit: null }, stored.lockedValues || {})
   };
@@ -98,6 +100,8 @@
 
   function persistNow() {
     try {
+      state.pinned = pinnedPalette ? pinnedPalette.slice() : null;
+      state.vibe = currentVibe;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (error) {
       // Storage can be full or blocked; the app stays usable.
@@ -495,11 +499,21 @@
     return haystack.toLowerCase().includes(query);
   }
 
+  function renderBulkBar() {
+    const bar = byId('bulkBar');
+    if (!bar) return;
+    const count = selection.size;
+    bar.hidden = count === 0;
+    const label = byId('bulkCount');
+    if (label) label.textContent = `${count} selected`;
+  }
+
   function renderSaved() {
     const container = byId('savedMoodsContainer');
     if (!container) return;
     container.replaceChildren();
     renderFolderChips();
+    renderBulkBar();
     const visible = state.saved
       .filter((mood) => state.folderFilter === 'All' || folderOf(mood) === state.folderFilter)
       .filter((mood) => matchesQuery([
@@ -515,6 +529,17 @@
     visible.forEach((mood) => {
       const row = document.createElement('div');
       row.className = 'saved-mood-item';
+
+      const pick = document.createElement('input');
+      pick.type = 'checkbox';
+      pick.className = 'saved-pick';
+      pick.checked = selection.has(mood.id);
+      pick.setAttribute('aria-label', `Select ${mood.name || 'saved mood'}`);
+      pick.addEventListener('change', () => {
+        if (pick.checked) selection.add(mood.id);
+        else selection.delete(mood.id);
+        renderBulkBar();
+      });
       const swatch = document.createElement('span');
       swatch.className = 'saved-mood-swatch saved-mood-thumbs';
       const thumbs = Array.isArray(mood.palette) && mood.palette.length ?
@@ -622,7 +647,7 @@
       });
 
       actions.append(load, rename, note, folder, remove);
-      row.append(swatch, info, actions);
+      row.append(pick, swatch, info, actions);
       container.appendChild(row);
     });
   }
@@ -1181,6 +1206,13 @@
     if (vibe) vibe.textContent = currentVibe;
 
     const values = C.describe(current);
+    const named = C.nameOf(values.hex);
+    const nameNode = byId('colorName');
+    if (nameNode) {
+      nameNode.textContent = named ?
+        (named.distance < 8 ? named.name : `near ${named.name}`) :
+        '';
+    }
     [['hexValue', values.hex], ['rgbValue', values.rgb], ['hslValue', values.hsl]].forEach(([id, value]) => {
       const node = byId(id);
       if (node) node.textContent = value;
@@ -1356,6 +1388,51 @@
   <text x="48" y="72" font-family="system-ui, sans-serif" font-size="15" fill="#777582">${HARMONY_LABELS[state.harmony] || state.harmony}${pinnedPalette ? ' · pinned palette' : ''} · ${new Date().toISOString().slice(0, 10)}</text>${rows}
   <text x="48" y="${height - 24}" font-family="system-ui, sans-serif" font-size="13" fill="#777582">Mood Mixer · drsamonline.github.io/mood-mixer</text>
 </svg>`;
+  }
+
+  function printHistory() {
+    const sheet = byId('printSheet');
+    if (!sheet) return;
+    const entries = state.history.slice(0, MAX_HISTORY);
+    if (!entries.length) {
+      announce('No history to print yet');
+      return;
+    }
+    sheet.replaceChildren();
+    const title = document.createElement('h1');
+    title.textContent = 'Mood Mixer — recent palettes';
+    const sub = document.createElement('p');
+    sub.textContent = `${entries.length} entries · ${new Date().toLocaleDateString()}`;
+    sheet.append(title, sub);
+
+    entries.forEach((entry, index) => {
+      const row = document.createElement('div');
+      row.className = 'print-row';
+      const label = document.createElement('span');
+      label.className = 'print-label';
+      label.textContent = `${index + 1}. ${entry.vibe || 'Color'}`;
+      const hexes = document.createElement('span');
+      hexes.className = 'print-hexes';
+      hexes.textContent = (entry.palette || [entry.hex]).join('  ');
+      const strip = document.createElement('span');
+      strip.className = 'print-strip';
+      (entry.palette || [entry.hex]).forEach((hex) => {
+        const chip = document.createElement('span');
+        chip.style.backgroundColor = hex;
+        strip.appendChild(chip);
+      });
+      row.append(label, strip, hexes);
+      sheet.appendChild(row);
+    });
+
+    document.body.classList.add('printing-history');
+    const cleanup = () => {
+      document.body.classList.remove('printing-history');
+      window.removeEventListener('afterprint', cleanup);
+    };
+    window.addEventListener('afterprint', cleanup);
+    window.print();
+    window.setTimeout(cleanup, 4000);
   }
 
   function historySheet() {
@@ -1588,6 +1665,8 @@
       if (svg) download('mood-mixer-history.svg', svg, 'image/svg+xml');
     });
 
+    on('printHistoryBtn', 'click', () => printHistory());
+
     on('searchInput', 'input', (event) => {
       query = event.target.value.trim().toLowerCase();
       renderSaved();
@@ -1776,6 +1855,42 @@
       collections: state.collections
     }, null, 2), 'application/json'));
 
+    on('bulkSelectAll', 'click', () => {
+      state.saved.forEach((mood) => selection.add(mood.id));
+      renderSaved();
+    });
+
+    on('bulkClear', 'click', () => {
+      selection.clear();
+      renderSaved();
+    });
+
+    on('bulkMove', 'click', () => {
+      if (!selection.size) return;
+      const target = window.prompt('Move selected moods to folder:', state.folderFilter === 'All' ? 'Unfiled' : state.folderFilter);
+      if (target === null) return;
+      const folder = target.trim() || 'Unfiled';
+      state.saved.forEach((mood) => {
+        if (selection.has(mood.id)) mood.folder = folder;
+      });
+      selection.clear();
+      state.folderFilter = 'All';
+      renderSaved();
+      persistNow();
+      announce(`Moved to ${folder}`);
+    });
+
+    on('bulkDelete', 'click', () => {
+      if (!selection.size) return;
+      const count = selection.size;
+      if (!window.confirm(`Delete ${count} saved mood${count === 1 ? '' : 's'}? This cannot be undone.`)) return;
+      state.saved = state.saved.filter((mood) => !selection.has(mood.id));
+      selection.clear();
+      renderSaved();
+      persistNow();
+      announce(`${count} deleted`);
+    });
+
     on('importBtn', 'click', () => byId('importFileInput')?.click());
 
     on('importConfirmBtn', 'click', () => {
@@ -1948,6 +2063,7 @@
   let deferredInstall = null;
   let pendingImport = null;
   let query = '';
+  const selection = new Set();
 
   function showInstall(show) {
     const button = byId('installBtn');
@@ -2023,7 +2139,9 @@
 
   function init() {
     const fromHash = readHash();
-    currentVibe = state.vibes.length ? state.vibes[0] : 'Moody';
+    if (!pinnedPalette && state.pinned) pinnedPalette = state.pinned.slice();
+    currentVibe = state.vibe || (state.vibes.length ? state.vibes[0] : 'Moody');
+    if (state.vibe) vibePinned = true;
     syncSettings();
     buildSliders();
     renderPresets();

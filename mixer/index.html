@@ -10,15 +10,15 @@
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-  <link rel="manifest" href="../manifest.json?v=2.7.0">
+  <link rel="manifest" href="../manifest.json?v=2.8.0">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Mood Mixer — live color playground">
   <meta property="og:description" content="Sliders in, palettes out. Copy hex, check contrast, export CSS, JSON, Tailwind or PNG.">
   <meta property="og:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://drsamonline.github.io/mood-mixer/screenshots/mixer.png">
-  <link rel="stylesheet" href="../theme.css?v=2.7.0">
-  <link rel="stylesheet" href="../style.css?v=2.7.0">
+  <link rel="stylesheet" href="../theme.css?v=2.8.0">
+  <link rel="stylesheet" href="../style.css?v=2.8.0">
 </head>
 
 <body>
@@ -81,6 +81,7 @@
           <span class="color-value"><strong>HSL</strong> <span id="hslValue">197&deg;, 64%, 69%</span><button class="copy-color-btn" type="button" data-copy="hslValue" aria-label="Copy HSL color">Copy</button></span>
         </div>
 
+        <p id="colorName" class="color-name" aria-live="polite"></p>
         <p id="copyStatus" class="copy-status" role="status" aria-live="polite"></p>
 
         <div class="hero-actions">
@@ -283,6 +284,7 @@
             <h2>Palette History</h2>
             <div class="panel-actions">
               <button id="historySheetBtn" class="btn btn-sm" type="button">Sheet</button>
+              <button id="printHistoryBtn" class="btn btn-sm" type="button">Print</button>
               <button id="undoReorderBtn" class="btn btn-sm" type="button" hidden>Undo reorder</button>
             </div>
           </div>
@@ -302,6 +304,13 @@
             <span class="visually-hidden">Search saved moods and palettes</span>
             <input type="search" id="searchInput" class="search-input" placeholder="Search name, vibe, hex or note" autocomplete="off">
           </label>
+          <div id="bulkBar" class="bulk-bar" hidden>
+            <span id="bulkCount" class="bulk-count">0 selected</span>
+            <button id="bulkSelectAll" class="btn btn-sm" type="button">Select all</button>
+            <button id="bulkClear" class="btn btn-sm" type="button">Clear</button>
+            <button id="bulkMove" class="btn btn-sm" type="button">Move</button>
+            <button id="bulkDelete" class="btn btn-sm" type="button">Delete</button>
+          </div>
           <div id="folderChips" class="folder-chips" aria-label="Saved mood folders"></div>
           <div id="savedMoodsContainer" class="saved-moods"></div>
         </section>
@@ -336,6 +345,8 @@
     </footer>
   </div>
 
+  <section id="printSheet" class="print-sheet" aria-hidden="true"></section>
+
   <dialog id="importDialog" class="keys-dialog" aria-labelledby="importTitle">
     <h2 id="importTitle">Merge this backup?</h2>
     <dl id="importSummary"></dl>
@@ -363,8 +374,8 @@
     </form>
   </dialog>
 
-  <script src="../color-core.js?v=2.7.0"></script>
-  <script src="../script.js?v=2.7.0"></script>
+  <script src="../color-core.js?v=2.8.0"></script>
+  <script src="../script.js?v=2.8.0"></script>
 </body>
 
 </html>

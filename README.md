@@ -87,6 +87,10 @@ All captures are real renders of this repository, taken at 1440×900, 1440×1000
 - **Collections.** Save the four colours as a named palette, restore it with every setting, pin it, copy it, share it as a link, delete it. Collections travel in the JSON backup.
 - **Pinned palettes.** A collection can be pinned, and a pinned palette travels as `#q=7ec8e3-4a90d9-1f2c3d-ffffff` — the exact four colours, not a re-derivation. Moving a slider releases the pin.
 - **SVG sheet.** A printable, self-contained SVG with every colour's hex, RGB, HSL and contrast against white and black — or the same sheet rasterised to a 2× PNG for posting.
+- **Bulk actions.** Tick several saved moods, then move them to a folder or delete them in one pass.
+- **Nearest colour name.** The current colour is named against the CSS colour table, offline, weighted to how the eye reads green.
+- **Session restore.** The palette, the pinned palette, the vibe word and the open panel come back on the next visit without a link.
+- **Print history.** The twelve recent palettes print as one A4 sheet, a row each.
 - **Notes and search.** One free-text note per saved mood, and one search box that filters moods and palettes by name, vibe, hex, folder or note.
 - **Contrast grade on every saved mood.** Each row shows the ratio and AA/AAA grade of the text colour that colour can carry.
 - **Readable pairs.** Three text-on-background suggestions from the current palette, each graded, each copying its CSS on click.
