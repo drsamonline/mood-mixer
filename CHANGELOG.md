@@ -2,6 +2,15 @@
 
 Everything below is one static site: HTML, CSS, vanilla JavaScript. No build step, no framework, no network calls.
 
+## 2.19.0 — 2026-11-13
+
+**Lighthouse motion removed**
+
+- Every lighthouse animation is gone: no beam rotation, no lamp pulse, no glow, no water drift, no float. All `@keyframes` for it were deleted, along with the `requestAnimationFrame` driver.
+- The `Beacon` button in the hero and the `Lighthouse beacon` switch in Settings are removed, with their state, persistence and classes.
+- The drawing now appears only in focus mode, still, at 0.85 opacity. Nothing about it runs on a timer.
+- Verified: `transform` attribute absent, `animationName: none` on the sweep and the lamp, no beacon controls in the DOM, zero console errors.
+
 ## 2.18.0 — 2026-11-13
 
 - The beam is now driven by `requestAnimationFrame` writing `transform="rotate(…)"` on the SVG group, so it no longer depends on CSS transform support for SVG elements. Measured: 6.4° → 12.9° → 31.3° → 44.6° over two seconds.

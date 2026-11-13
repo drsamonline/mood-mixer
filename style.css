@@ -1848,11 +1848,11 @@ body.focus-locked {
   right: clamp(-40px, 2vw, 24px);
   bottom: 64px;
   z-index: 1;
-  display: block;
-  width: min(38vw, 430px);
-  opacity: 0.38;
+  display: none;
+  width: min(46vw, 520px);
+  opacity: 0;
   pointer-events: none;
-  transition: opacity 0.8s ease, width 0.8s ease;
+  transition: opacity 0.6s ease, width 0.6s ease;
 }
 
 .lighthouse svg {
@@ -1868,80 +1868,7 @@ body:has(.app-container.focus-mode) .lighthouse {
   display: block;
   bottom: 0;
   width: min(52vw, 620px);
-  opacity: 0.9;
-}
-
-.lighthouse .lh-sweep {
-  transform-box: view-box;
-  transform-origin: 200px 84px;
-  will-change: transform;
-}
-
-.lighthouse .lh-lamp {
-  animation: lhPulse 3.5s ease-in-out infinite;
-}
-
-.lighthouse .lh-glow {
-  animation: lhGlow 5s ease-in-out infinite alternate;
-}
-
-.lighthouse .lh-water {
-  transform-box: view-box;
-  animation: lhDrift 9s ease-in-out infinite alternate;
-}
-
-.lighthouse {
-  animation: lhFloat 6s ease-in-out infinite alternate;
-}
-
-@keyframes lhPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-@keyframes lhGlow {
-  from { opacity: 0.1; }
-  to { opacity: 0.34; }
-}
-
-@keyframes lhDrift {
-  from { transform: translateX(-7px); }
-  to { transform: translateX(7px); }
-}
-
-@keyframes lhFloat {
-  from { transform: translateY(0); }
-  to { transform: translateY(-6px); }
-}
-
-/* Motion is on by default and switchable; the switch is the last word. */
-html.lh-still .lighthouse,
-html.lh-still .lighthouse .lh-sweep,
-html.lh-still .lighthouse .lh-lamp,
-html.lh-still .lighthouse .lh-glow,
-html.lh-still .lighthouse .lh-water {
-  animation: none;
-}
-
-html.lh-still .lighthouse .lh-sweep {
-  transform: none;
-}
-
-/* Reduced motion: drop the float and the water drift, keep the light alive.
- * The beacon keeps turning, at a quarter speed, because it is driven from JS. */
-@media (prefers-reduced-motion: reduce) {
-  html:not(.lh-still) .lighthouse,
-  html:not(.lh-still) .lighthouse .lh-water {
-    animation: none;
-  }
-
-  html:not(.lh-still) .lighthouse .lh-lamp {
-    animation: lhPulse 2s ease-in-out infinite;
-  }
-
-  html:not(.lh-still) .lighthouse .lh-glow {
-    animation: lhGlow 3s ease-in-out infinite alternate;
-  }
+  opacity: 0.85;
 }
 
 @media print {

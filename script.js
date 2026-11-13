@@ -81,7 +81,6 @@
     lastFolder: typeof stored.lastFolder === 'string' ? stored.lastFolder : 'Unfiled',
     schemaVersion: SCHEMA,
     quiet: Boolean(stored.quiet),
-    lighthouseMotion: typeof stored.lighthouseMotion === 'boolean' ? stored.lighthouseMotion : true,
     pinned: Array.isArray(stored.pinned) && stored.pinned.length ? stored.pinned.slice(0, 4) : null,
     locks: Object.assign({ hue: false, sat: false, lit: false }, stored.locks || {}),
     lockedValues: Object.assign({ hue: null, sat: null, lit: null }, stored.lockedValues || {})
@@ -89,10 +88,7 @@
 
   /* Older builds could carry background: gradient from a shared link the user
    * never picked. Anything without a schema version starts on solid again. */
-  if (!stored.schemaVersion) {
-    state.background = 'solid';
-    state.lighthouseMotion = true;
-  }
+  if (!stored.schemaVersion) state.background = 'solid';
 
   let current = { r: 126, g: 200, b: 227, h: 197, s: 64, l: 69 };
   let currentVibe = state.vibes[0] || 'Serene';
@@ -1186,15 +1182,10 @@
     if (driftToggle) driftToggle.checked = state.drift;
     const quietToggle = byId('quietToggle');
     if (quietToggle) quietToggle.checked = state.quiet;
-    const lhToggle = byId('lhMotionToggle');
-    if (lhToggle) lhToggle.checked = state.lighthouseMotion;
-    const beaconBtn = byId('beaconBtn');
-    if (beaconBtn) beaconBtn.setAttribute('aria-pressed', String(state.lighthouseMotion));
     const pinnedBadge = byId('pinnedBadge');
     if (pinnedBadge) pinnedBadge.hidden = !pinnedPalette;
 
     const root = document.documentElement;
-    root.classList.toggle('lh-still', !state.lighthouseMotion);
     if (state.theme === 'dark') root.setAttribute('data-theme', 'dark');
     else root.removeAttribute('data-theme');
     if (state.contrast === 'high') root.setAttribute('data-contrast', 'high');
@@ -1806,58 +1797,6 @@
 
   /* ---------- focus mode ---------- */
 
-  /* The beam is rotated by script, not by a CSS transform on an SVG group:
-   * that combination is the one that silently does nothing in some engines. */
-  const beacon = {
-    frame: 0,
-    angle: 0,
-    last: 0,
-    running: false,
-
-    element() {
-      return document.querySelector('.lighthouse .lh-sweep');
-    },
-
-    speed() {
-      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const seconds = reduced ? 56 : 14;
-      return 360 / seconds;
-    },
-
-    tick: function tick(now) {
-      const self = beacon;
-      const element = self.element();
-      if (!element) {
-        self.running = false;
-        return;
-      }
-      if (!self.last) self.last = now;
-      const dt = Math.min((now - self.last) / 1000, 0.25);
-      self.last = now;
-      self.angle = (self.angle + self.speed() * dt) % 360;
-      element.setAttribute('transform', `rotate(${self.angle.toFixed(2)} 200 84)`);
-      self.frame = window.requestAnimationFrame(tick);
-    },
-
-    start() {
-      const element = this.element();
-      if (!element) return;
-      if (this.running) return;
-      if (!state.lighthouseMotion) {
-        element.removeAttribute('transform');
-        return;
-      }
-      this.running = true;
-      this.last = 0;
-      this.frame = window.requestAnimationFrame(this.tick);
-    },
-
-    stop() {
-      this.running = false;
-      window.cancelAnimationFrame(this.frame);
-    }
-  };
-
   function flashFocusCaption() {
     const caption = byId('focusCaption');
     if (!caption) return;
@@ -1875,13 +1814,8 @@
     appContainer.classList.remove('hud-visible');
     document.body.classList.toggle('focus-locked', active);
     document.documentElement.classList.toggle('focus-on', active);
-    if (active) {
-      startDrift();
-      beacon.start();
-    } else {
-      stopDrift();
-      beacon.stop();
-    }
+    if (active) startDrift();
+    else stopDrift();
     if (button) {
       button.setAttribute('aria-pressed', String(active));
       button.textContent = active ? '\u2715 Exit focus view' : '\u26f6 Focus on color';
@@ -2548,26 +2482,6 @@
       schedulePersist();
     });
 
-    on('lhMotionToggle', 'change', (event) => {
-      state.lighthouseMotion = event.target.checked;
-      syncSettings();
-      schedulePersist();
-      if (state.lighthouseMotion) beacon.start();
-      else beacon.stop();
-      announce(state.lighthouseMotion ? 'Lighthouse beacon on' : 'Lighthouse still');
-    });
-
-    on('beaconBtn', 'click', () => {
-      state.lighthouseMotion = !state.lighthouseMotion;
-      syncSettings();
-      schedulePersist();
-      if (state.lighthouseMotion) beacon.start();
-      else beacon.stop();
-      const button = byId('beaconBtn');
-      if (button) button.setAttribute('aria-pressed', String(state.lighthouseMotion));
-      announce(state.lighthouseMotion ? 'Lighthouse beacon on' : 'Lighthouse still');
-    });
-
     on('quietToggle', 'change', (event) => {
       state.quiet = event.target.checked;
       if (state.quiet) {
@@ -2763,7 +2677,6 @@
     if (state.drift) startDrift();
     updateMood();
     if (wantFocus) setFocusMode(true);
-    beacon.start();
     if (fromHash) announce('Loaded palette from link');
     if ('serviceWorker' in navigator && window.isSecureContext) {
       navigator.serviceWorker.register('../service-worker.js').catch(() => {});
